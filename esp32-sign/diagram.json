@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "author": "Happy Wheel",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-lcd2004", "id": "lcd1", "top": -150, "left": 130, "attrs": { "pins": "i2c" } },
+    { "type": "wokwi-neopixel", "id": "px1", "top": 70, "left": 190, "attrs": {} },
+    { "type": "wokwi-neopixel", "id": "px2", "top": 70, "left": 250, "attrs": {} },
+    { "type": "wokwi-neopixel", "id": "px3", "top": 70, "left": 310, "attrs": {} },
+    { "type": "wokwi-neopixel", "id": "px4", "top": 70, "left": 370, "attrs": {} },
+    { "type": "wokwi-buzzer", "id": "bz1", "top": 130, "left": 440, "attrs": { "volume": "0.3" } },
+    { "type": "wokwi-pushbutton", "id": "btn1", "top": 170, "left": 190, "attrs": { "color": "green", "label": "CAR ARRIVES" } },
+    { "type": "wokwi-servo", "id": "gate", "top": 230, "left": 300, "attrs": { "horn": "single" } }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "lcd1:GND", "esp:GND.1", "black", [ "h0" ] ],
+    [ "lcd1:VCC", "esp:5V", "red", [ "h0" ] ],
+    [ "lcd1:SDA", "esp:21", "green", [ "h0" ] ],
+    [ "lcd1:SCL", "esp:22", "purple", [ "h0" ] ],
+
+    [ "esp:13", "px1:DIN", "orange", [] ],
+    [ "px1:DOUT", "px2:DIN", "orange", [] ],
+    [ "px2:DOUT", "px3:DIN", "orange", [] ],
+    [ "px3:DOUT", "px4:DIN", "orange", [] ],
+    [ "px1:VDD", "esp:5V", "red", [] ],
+    [ "px2:VDD", "esp:5V", "red", [] ],
+    [ "px3:VDD", "esp:5V", "red", [] ],
+    [ "px4:VDD", "esp:5V", "red", [] ],
+    [ "px1:VSS", "esp:GND.2", "black", [] ],
+    [ "px2:VSS", "esp:GND.2", "black", [] ],
+    [ "px3:VSS", "esp:GND.2", "black", [] ],
+    [ "px4:VSS", "esp:GND.2", "black", [] ],
+
+    [ "bz1:1", "esp:GND.2", "black", [] ],
+    [ "bz1:2", "esp:25", "blue", [] ],
+
+    [ "btn1:1.l", "esp:4", "green", [] ],
+    [ "btn1:2.l", "esp:GND.2", "black", [] ],
+
+    [ "gate:PWM", "esp:18", "orange", [] ],
+    [ "gate:V+", "esp:5V", "red", [] ],
+    [ "gate:GND", "esp:GND.2", "black", [] ]
+  ],
+  "dependencies": {}
+}

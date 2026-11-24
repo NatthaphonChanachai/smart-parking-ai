@@ -1,0 +1,9 @@
+.pio/
+.vscode/
+*.mp4
+*.avi
+*.weights
+*.onnx
+flows_cred.json
+.DS_Store
+Thumbs.db

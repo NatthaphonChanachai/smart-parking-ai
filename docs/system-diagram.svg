@@ -1,0 +1,281 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 980" width="1600" height="980" font-family="'Segoe UI','Leelawadee UI','Noto Sans Thai',Tahoma,sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1530"/><stop offset="1" stop-color="#060b18"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="0.12" cy="0" r="0.6"><stop offset="0" stop-color="#2a4fae" stop-opacity=".55"/><stop offset="1" stop-color="#2a4fae" stop-opacity="0"/></radialGradient>
+    <radialGradient id="glow2" cx="1" cy="0.1" r="0.55"><stop offset="0" stop-color="#6b3bd1" stop-opacity=".35"/><stop offset="1" stop-color="#6b3bd1" stop-opacity="0"/></radialGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14203a"/><stop offset="1" stop-color="#0d1629"/></linearGradient>
+    <linearGradient id="gBlue" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4c8dff"/><stop offset="1" stop-color="#a678ff"/></linearGradient>
+    <linearGradient id="gGreen" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#16b07f"/><stop offset="1" stop-color="#22d39a"/></linearGradient>
+    <linearGradient id="gOrange" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff8a3b"/><stop offset="1" stop-color="#ffc93c"/></linearGradient>
+    <linearGradient id="gRed" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8f1d2c"/><stop offset="1" stop-color="#d2394b"/></linearGradient>
+    <linearGradient id="gPink" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff4bf0"/><stop offset="1" stop-color="#a678ff"/></linearGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#ffffff" stroke-opacity=".035"/></pattern>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8fb4ff"/></marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#22d39a"/></marker>
+    <marker id="arrO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#ffc93c"/></marker>
+    <filter id="sh" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity=".45"/></filter>
+    <style>
+      .t{fill:#eaf0fb}.m{fill:#8394b8}.h{font-weight:700;font-size:19px;fill:#eaf0fb}
+      .s{font-size:13px;fill:#8394b8}.b{font-size:14px;fill:#eaf0fb;font-weight:600}
+      .mono{font-family:Consolas,'JetBrains Mono',monospace}
+      .flow{fill:none;stroke:#8fb4ff;stroke-width:2.4;stroke-dasharray:7 6}
+      .chip{font-size:12px;font-weight:700}
+    </style>
+  </defs>
+
+  <rect width="1600" height="980" fill="url(#bg)"/>
+  <rect width="1600" height="980" fill="url(#glow1)"/>
+  <rect width="1600" height="980" fill="url(#glow2)"/>
+  <rect width="1600" height="980" fill="url(#grid)"/>
+
+  <!-- title -->
+  <rect x="40" y="30" width="54" height="54" rx="15" fill="url(#gBlue)"/>
+  <text x="67" y="68" text-anchor="middle" font-size="30" font-weight="800" fill="#fff" class="mono">P</text>
+  <text x="110" y="58" font-size="30" font-weight="800" class="t">Smart Parking <tspan fill="#a678ff">AI</tspan> — System Diagram</text>
+  <text x="110" y="82" class="s" font-size="15">CPE447 Machine Vision System · ทีม Happy Wheel · ระบบตรวจจับช่องจอดว่างด้วยกล้อง + Deep Learning แบบเรียลไทม์</text>
+  <g transform="translate(1290,38)">
+    <rect width="270" height="40" rx="20" fill="#22d39a22" stroke="#22d39a66"/>
+    <circle cx="22" cy="20" r="6" fill="#22d39a"/>
+    <text x="38" y="26" font-size="14" font-weight="700" fill="#22d39a">4 cameras · 20 slots · 1 s refresh</text>
+  </g>
+
+  <!-- ===== column headers ===== -->
+  <g font-size="12" font-weight="800" letter-spacing="2" fill="#8fb4ff">
+    <text x="40"   y="128">① IMAGE SOURCES</text>
+    <text x="345"  y="128">② EDGE AI · CiRA CORE</text>
+    <text x="700"  y="128">③ MESSAGE BROKER</text>
+    <text x="935"  y="128">④ LOGIC · NODE-RED</text>
+    <text x="1290" y="128">⑤ OUTPUTS</text>
+  </g>
+
+  <!-- ===== ① cameras ===== -->
+  <g filter="url(#sh)">
+    <rect x="40" y="142" width="265" height="540" rx="18" fill="url(#card)" stroke="#1f2e4d"/>
+  </g>
+  <g id="cams">
+    <!-- video cams -->
+    <g transform="translate(58,160)">
+      <rect width="229" height="104" rx="12" fill="#0a1222" stroke="#2b3d63"/>
+      <rect x="14" y="16" width="46" height="34" rx="6" fill="#4c8dff33" stroke="#4c8dff"/><path d="M60 26l14-8v30l-14-8z" fill="#4c8dff"/>
+      <text x="88" y="32" class="b">2A-C01 → Floor 1</text><text x="88" y="51" class="s">VideoFile · 3 ช่อง · ♿01</text>
+      <rect x="14" y="66" width="200" height="26" rx="7" fill="#ffffff08"/><text x="24" y="84" class="s mono">ลานจอดจริง · 1920×1080</text>
+    </g>
+    <g transform="translate(58,276)">
+      <rect width="229" height="104" rx="12" fill="#0a1222" stroke="#2b3d63"/>
+      <rect x="14" y="16" width="46" height="34" rx="6" fill="#4c8dff33" stroke="#4c8dff"/><path d="M60 26l14-8v30l-14-8z" fill="#4c8dff"/>
+      <text x="88" y="32" class="b">2A-C02 → Floor 2</text><text x="88" y="51" class="s">VideoFile · 2 ช่อง · ♿04</text>
+      <rect x="14" y="66" width="200" height="26" rx="7" fill="#ffffff08"/><text x="24" y="84" class="s mono">ลานจอดจริง · 1920×1080</text>
+    </g>
+    <g transform="translate(58,392)">
+      <rect width="229" height="104" rx="12" fill="#0a1222" stroke="#2b3d63"/>
+      <rect x="14" y="16" width="46" height="34" rx="6" fill="#4c8dff33" stroke="#4c8dff"/><path d="M60 26l14-8v30l-14-8z" fill="#4c8dff"/>
+      <text x="88" y="32" class="b">2A-C03 → Floor 3</text><text x="88" y="51" class="s">VideoFile · 3 ช่อง</text>
+      <rect x="14" y="66" width="200" height="26" rx="7" fill="#ffffff08"/><text x="24" y="84" class="s mono">ลานจอดจริง · 1920×1080</text>
+    </g>
+    <!-- webcam -->
+    <g transform="translate(58,508)">
+      <rect width="229" height="156" rx="12" fill="#1a1230" stroke="#a678ff"/>
+      <circle cx="37" cy="34" r="20" fill="#a678ff33" stroke="#a678ff"/><circle cx="37" cy="34" r="8" fill="#a678ff"/><rect x="27" y="56" width="20" height="6" rx="3" fill="#a678ff"/>
+      <text x="70" y="32" class="b">2A-C04 → Floor 4</text><text x="70" y="51" class="s">USB Webcam · LIVE</text>
+      <!-- toy lot -->
+      <g transform="translate(14,74)">
+        <rect width="200" height="68" rx="6" fill="#5b5f66"/>
+        <rect x="82" y="0" width="36" height="68" fill="#4a4e55"/>
+        <g fill="none" stroke="#fff" stroke-width="2"><path d="M0 11H80M0 22H80M0 34H80M0 45H80M0 57H80M120 11H200M120 22H200M120 34H200M120 45H200M120 57H200"/></g>
+        <path d="M100 8v52" stroke="#fff" stroke-width="2" stroke-dasharray="6 5"/>
+        <rect x="18" y="24" width="30" height="9" rx="3" fill="#ff4d5e"/><rect x="140" y="47" width="30" height="9" rx="3" fill="#4c8dff"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- ===== ② CiRA CORE ===== -->
+  <g filter="url(#sh)"><rect x="345" y="142" width="310" height="540" rx="18" fill="url(#card)" stroke="#1f2e4d"/></g>
+  <text x="365" y="176" class="h">CiRA CORE</text>
+  <text x="365" y="197" class="s">1 scene ต่อ 1 กล้อง · รันพร้อมกัน 4 scene</text>
+  <!-- pipeline -->
+  <g transform="translate(365,218)">
+    <rect width="270" height="58" rx="12" fill="#0a1222" stroke="#2b3d63"/>
+    <text x="16" y="25" class="b">Button Run ⟲ → VideoFile / Camera</text>
+    <text x="16" y="44" class="s">อ่านเฟรมวนลูป · ส่งต่อทีละเฟรม</text>
+  </g>
+  <path d="M500 278v22" class="flow" marker-end="url(#arr)"/>
+  <g transform="translate(365,304)">
+    <rect width="270" height="148" rx="12" fill="#24123a" stroke="url(#gPink)" stroke-width="2"/>
+    <text x="16" y="28" font-size="17" font-weight="800" fill="#ff8bf5">Deep Detect</text>
+    <text x="16" y="48" class="s">Object Detection (Deep Learning)</text>
+    <text x="16" y="66" class="s">train ด้วยภาพลานจอดของเราเอง</text>
+    <rect x="16" y="80" width="112" height="26" rx="13" fill="#ff4bf033" stroke="#ff4bf0"/><text x="72" y="98" text-anchor="middle" class="chip" fill="#ff8bf5">Occupied</text>
+    <rect x="138" y="80" width="112" height="26" rx="13" fill="#9dff3a26" stroke="#9dff3a"/><text x="194" y="98" text-anchor="middle" class="chip" fill="#c4ff7d">Avalible</text>
+    <text x="16" y="132" class="s mono">→ x, y, w, h, confidence</text>
+  </g>
+  <path d="M500 454v22" class="flow" marker-end="url(#arr)"/>
+  <g transform="translate(365,480)">
+    <rect width="270" height="58" rx="12" fill="#0a1222" stroke="#2b3d63"/>
+    <text x="16" y="25" class="b">MQTT Pub  +  Debug view</text>
+    <text x="16" y="44" class="s mono">parking/raw/&lt;camera-id&gt;</text>
+  </g>
+  <!-- detection preview -->
+  <g transform="translate(365,552)">
+    <rect width="270" height="112" rx="12" fill="#000"/>
+    <rect x="10" y="10" width="250" height="92" rx="6" fill="#2c3038"/>
+    <rect x="22" y="44" width="62" height="48" fill="none" stroke="#9dff3a" stroke-width="2.5"/><rect x="22" y="33" width="62" height="12" fill="#9dff3a"/><text x="25" y="43" font-size="9" font-weight="800" class="mono">Avalible 90%</text>
+    <rect x="98" y="30" width="72" height="62" fill="none" stroke="#ff4bf0" stroke-width="2.5"/><rect x="98" y="19" width="72" height="12" fill="#ff4bf0"/><text x="101" y="29" font-size="9" font-weight="800" class="mono">Occupied 98%</text>
+    <rect x="112" y="48" width="44" height="36" rx="10" fill="#d9dde5"/>
+    <rect x="182" y="30" width="68" height="62" fill="none" stroke="#ff4bf0" stroke-width="2.5"/><rect x="182" y="19" width="68" height="12" fill="#ff4bf0"/><text x="185" y="29" font-size="9" font-weight="800" class="mono">Occupied 99%</text>
+    <rect x="194" y="48" width="44" height="36" rx="10" fill="#6c7380"/>
+  </g>
+
+  <!-- cams -> cira -->
+  <g class="flow" marker-end="url(#arr)">
+    <path d="M287 212 C320 212 320 247 362 247"/>
+    <path d="M287 328 C322 328 322 260 362 255"/>
+    <path d="M287 444 C326 444 326 268 362 263"/>
+    <path d="M287 560 C330 560 330 272 362 270"/>
+  </g>
+
+  <!-- ===== ③ Mosquitto ===== -->
+  <g filter="url(#sh)"><rect x="700" y="300" width="200" height="214" rx="18" fill="url(#card)" stroke="#1f2e4d"/></g>
+  <g transform="translate(720,320)">
+    <rect width="48" height="48" rx="12" fill="#3c5a99"/>
+    <path d="M10 34c8-14 20-14 28 0M14 24c6-8 14-8 20 0" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="36" r="3.5" fill="#fff"/>
+    <text x="60" y="22" class="h" font-size="18">Mosquitto</text>
+    <text x="60" y="41" class="s">MQTT broker</text>
+    <text x="0" y="78" class="s mono">localhost:1883</text>
+    <rect x="0" y="92" width="160" height="80" rx="10" fill="#0a1222" stroke="#2b3d63"/>
+    <text x="10" y="114" font-size="12" class="mono" fill="#8fb4ff">parking/raw/+</text>
+    <text x="10" y="134" font-size="12" class="mono" fill="#22d39a">parking/2A/slot/+</text>
+    <text x="10" y="156" font-size="11" class="m">retained · QoS 0</text>
+  </g>
+  <path d="M637 509 C670 509 670 420 697 420" class="flow" marker-end="url(#arr)"/>
+  <text x="652" y="560" class="s mono" font-size="11" transform="rotate(0)">JSON / frame</text>
+
+  <!-- ===== ④ Node-RED ===== -->
+  <g filter="url(#sh)"><rect x="935" y="142" width="320" height="540" rx="18" fill="url(#card)" stroke="#1f2e4d"/></g>
+  <g transform="translate(955,160)">
+    <rect width="40" height="40" rx="10" fill="#8f0000"/>
+    <g fill="none" stroke="#fff" stroke-width="2.6"><rect x="7" y="9" width="10" height="8" rx="2"/><rect x="23" y="23" width="10" height="8" rx="2"/><path d="M17 13c8 0 2 14 6 14"/></g>
+    <text x="52" y="18" class="h">Node-RED</text>
+    <text x="52" y="36" class="s">ตัดสินสถานะทีละช่อง + API + Dashboard</text>
+  </g>
+  <g font-size="13">
+    <g transform="translate(955,216)"><rect width="280" height="52" rx="10" fill="#0a1222" stroke="#2b3d63"/><text x="14" y="22" class="b">Init ROI</text><text x="14" y="40" class="s">ผังช่องจอดต่อกล้อง (x1–x2, y1–y2)</text></g>
+    <g transform="translate(955,276)"><rect width="280" height="70" rx="10" fill="#0f2a2a" stroke="#22d39a"/><text x="14" y="22" class="b" fill="#22d39a">Slot Logic</text><text x="14" y="40" class="s">จับกล่องเข้าช่องด้วยจุดกึ่งกลาง · conf ≥ 0.5</text><text x="14" y="58" class="s">debounce 5 s กันสถานะกระพริบ</text></g>
+    <g transform="translate(955,354)"><rect width="280" height="52" rx="10" fill="#2a1f0a" stroke="#ffc93c"/><text x="14" y="22" class="b" fill="#ffc93c">Watchdog</text><text x="14" y="40" class="s">กล้องเงียบ &gt; 10 s → ช่องเป็น "ไม่ทราบ"</text></g>
+    <g transform="translate(955,414)"><rect width="280" height="70" rx="10" fill="#0a1222" stroke="#2b3d63"/><text x="14" y="22" class="b">State Store</text><text x="14" y="40" class="s">สถานะทุกช่อง · เหตุการณ์ · ประวัติ</text><text x="14" y="58" class="s">สถิติรายวัน (เข้า/ออก/เวลาจอด/พีค)</text></g>
+    <g transform="translate(955,492)"><rect width="136" height="70" rx="10" fill="#0a1222" stroke="#4c8dff"/><text x="12" y="22" class="b" fill="#8fb4ff">State API</text><text x="12" y="42" class="s mono">/api/state</text><text x="12" y="58" class="s">แนะนำช่อง</text></g>
+    <g transform="translate(1099,492)"><rect width="136" height="70" rx="10" fill="#0a1222" stroke="#ffad3b"/><text x="12" y="22" class="b" fill="#ffad3b">Summary</text><text x="12" y="42" class="s">ทุก 2 วินาที</text><text x="12" y="58" class="s mono">free/total ต่อชั้น</text></g>
+    <g transform="translate(955,570)"><rect width="280" height="94" rx="10" fill="#0a1222" stroke="#2b3d63"/><text x="14" y="22" class="b">HTTP · /parking</text><text x="14" y="42" class="s">หน้า Dashboard (HTML/CSS/JS)</text><text x="14" y="60" class="s">ดึงข้อมูลจาก /api/state ทุก 1 s</text><text x="14" y="80" class="s">ไม่ต้องลงโปรแกรมเพิ่ม เปิดผ่านเบราว์เซอร์</text></g>
+  </g>
+  <!-- internal flow arrows -->
+  <g stroke="#2b3d63" stroke-width="2" fill="none"><path d="M945 300h-6v150h6M945 380h-6"/></g>
+  <!-- broker <-> node-red -->
+  <path d="M900 380 C920 380 920 311 952 311" class="flow" marker-end="url(#arr)"/>
+  <path d="M952 330 C925 330 925 440 903 440" class="flow" stroke="#22d39a" marker-end="url(#arrG)"/>
+  <text x="852" y="296" class="s" font-size="11">subscribe raw</text>
+  <text x="842" y="470" class="s" font-size="11" fill="#22d39a">publish slot (retain)</text>
+
+  <!-- ===== ⑤ outputs ===== -->
+  <!-- dashboard -->
+  <g filter="url(#sh)"><rect x="1290" y="142" width="270" height="250" rx="18" fill="url(#card)" stroke="#1f2e4d"/></g>
+  <g transform="translate(1308,160)">
+    <text x="0" y="18" class="h" font-size="17">Web Dashboard</text>
+    <text x="0" y="37" class="s mono">localhost:1880/parking</text>
+    <rect x="0" y="50" width="234" height="172" rx="10" fill="#070d1a" stroke="#2b3d63"/>
+    <rect x="10" y="60" width="112" height="42" rx="6" fill="#000" stroke="#333"/>
+    <text x="66" y="90" text-anchor="middle" font-size="26" font-weight="800" fill="#ffad3b" class="mono">02</text>
+    <rect x="130" y="60" width="94" height="42" rx="6" fill="#101a2e"/>
+    <circle cx="150" cy="81" r="12" fill="none" stroke="#1f2e4d" stroke-width="5"/><path d="M150 69a12 12 0 0 1 11 16" fill="none" stroke="#ffad3b" stroke-width="5"/>
+    <text x="170" y="87" font-size="14" font-weight="700" class="t">30%</text>
+    <g transform="translate(10,110)">
+      <rect width="68" height="50" rx="5" fill="#22d39a14" stroke="#22d39a" stroke-dasharray="3 2"/><text x="34" y="33" text-anchor="middle" font-weight="800" fill="#22d39a" font-size="18">P</text>
+      <rect x="76" width="68" height="50" rx="5" fill="#ff4d5e14" stroke="#ff4d5e" stroke-dasharray="3 2"/><rect x="96" y="8" width="28" height="36" rx="8" fill="#c9d3e6"/>
+      <rect x="152" width="68" height="50" rx="5" fill="#ff4d5e14" stroke="#ff4d5e" stroke-dasharray="3 2"/><rect x="172" y="8" width="28" height="36" rx="8" fill="#3a4558"/>
+    </g>
+    <path d="M14 208 l20-8 20 4 20-10 20 6 20-12 20 8 20-4 20 6 20-10 20 4 20-6" fill="none" stroke="#22d39a" stroke-width="2"/>
+  </g>
+  <!-- hivemq -->
+  <g filter="url(#sh)"><rect x="1290" y="420" width="270" height="92" rx="18" fill="url(#card)" stroke="#1f2e4d"/></g>
+  <g transform="translate(1308,438)">
+    <path d="M14 44a14 14 0 0 1 2-28 18 18 0 0 1 34-2 13 13 0 0 1 4 30z" fill="#ffc93c22" stroke="#ffc93c" stroke-width="2"/>
+    <text x="70" y="22" class="b">HiveMQ public broker</text>
+    <text x="70" y="40" class="s">ส่งข้อมูลไปยังอุปกรณ์นอกเครื่อง</text>
+    <text x="70" y="58" class="s mono" font-size="11">…/parking/summary</text>
+  </g>
+  <!-- esp32 -->
+  <g filter="url(#sh)"><rect x="1290" y="540" width="270" height="290" rx="18" fill="url(#card)" stroke="#1f2e4d"/></g>
+  <g transform="translate(1308,558)">
+    <text x="0" y="18" class="h" font-size="17">ESP32 Floor Sign</text>
+    <text x="0" y="37" class="s">Wokwi simulator · ป้ายหน้าทางเข้า</text>
+    <rect x="0" y="50" width="234" height="84" rx="8" fill="#0c6b34"/>
+    <rect x="8" y="58" width="218" height="68" rx="3" fill="#a6d33a"/>
+    <g font-size="13" class="mono" fill="#13240a" font-weight="700">
+      <text x="14" y="74">F1 ███░░░░░  1/3 ✓</text><text x="14" y="89">F2 ████░░░░  1/2 ✓</text><text x="14" y="104">F3 ░░░░░░░░  0/3 ✗</text><text x="14" y="119">F4 ██████░░  9/12✓</text>
+    </g>
+    <g transform="translate(0,146)">
+      <circle cx="12" cy="10" r="8" fill="#22d39a"/><circle cx="34" cy="10" r="8" fill="#22d39a"/><circle cx="56" cy="10" r="8" fill="#ff4d5e"/><circle cx="78" cy="10" r="8" fill="#ffad3b"/>
+      <text x="98" y="15" class="s">NeoPixel ต่อชั้น</text>
+    </g>
+    <g class="s" font-size="12.5">
+      <text x="0" y="188">🔊 Buzzer — ช่องว่างกลับมา / ลานเต็ม</text>
+      <text x="0" y="208">🟢 ปุ่ม CAR ARRIVES → แนะนำชั้น</text>
+      <text x="0" y="228">🚧 Servo ไม้กั้น — เปิดเมื่อมีที่ว่าง</text>
+      <text x="0" y="248">🕑 NTP clock · แจ้งเตือน NO DATA</text>
+    </g>
+  </g>
+
+  <!-- node-red -> outputs -->
+  <path d="M1237 650 C1265 650 1262 290 1287 290" class="flow" marker-end="url(#arr)"/>
+  <text x="1262" y="410" class="s" font-size="11" transform="rotate(-90 1262 410)">HTTP · JSON</text>
+  <path d="M1237 527 C1262 527 1262 466 1287 466" class="flow" stroke="#ffc93c" marker-end="url(#arrO)"/>
+  <path d="M1425 512 v25" class="flow" stroke="#ffc93c" marker-end="url(#arrO)"/>
+
+  <!-- ===== bottom: data contracts ===== -->
+  <g filter="url(#sh)"><rect x="40" y="712" width="1215" height="230" rx="18" fill="url(#card)" stroke="#1f2e4d"/></g>
+  <text x="62" y="744" font-size="12" font-weight="800" letter-spacing="2" fill="#8fb4ff">DATA FLOW · ตัวอย่างข้อความในแต่ละขั้น</text>
+  <g transform="translate(62,760)">
+    <rect width="380" height="162" rx="12" fill="#070d1a" stroke="#2b3d63"/>
+    <text x="14" y="24" class="b" font-size="13" fill="#ff8bf5">1 · CiRA → parking/raw/2A-C02</text>
+    <g class="mono" font-size="12" fill="#b9c6e4">
+      <text x="14" y="50">{"DeepDetect":{"im_w":1920,"im_h":1080,</text>
+      <text x="14" y="68"> "objects":[{"name":"Occupied",</text>
+      <text x="14" y="86">   "x":1450,"y":700,"w":540,"h":620,</text>
+      <text x="14" y="104">   "confidence":0.98}, …]}}</text>
+    </g>
+    <text x="14" y="140" class="s">ส่งทุกเฟรม · กล้องละ 15–50 fps</text>
+  </g>
+  <g transform="translate(458,760)">
+    <rect width="380" height="162" rx="12" fill="#070d1a" stroke="#2b3d63"/>
+    <text x="14" y="24" class="b" font-size="13" fill="#22d39a">2 · Node-RED → parking/2A/slot/05</text>
+    <g class="mono" font-size="12" fill="#b9c6e4">
+      <text x="14" y="50">{"status":"occupied",</text>
+      <text x="14" y="68"> "type":"normal",</text>
+      <text x="14" y="86"> "cam":"2A-C02","conf":0.98}</text>
+    </g>
+    <text x="14" y="122" class="s">ส่งเฉพาะตอนสถานะเปลี่ยน (หลัง debounce)</text>
+    <text x="14" y="140" class="s">retain = true → ผู้รับใหม่ได้ค่าล่าสุดทันที</text>
+  </g>
+  <g transform="translate(854,760)">
+    <rect width="380" height="162" rx="12" fill="#070d1a" stroke="#2b3d63"/>
+    <text x="14" y="24" class="b" font-size="13" fill="#ffad3b">3 · Node-RED → ESP32 (summary)</text>
+    <g class="mono" font-size="12" fill="#b9c6e4">
+      <text x="14" y="50">Floor 1,1,3;Floor 2,1,2;</text>
+      <text x="14" y="68">Floor 3,0,3;Floor 4,9,12</text>
+    </g>
+    <text x="14" y="104" class="s">รูปแบบ ชื่อชั้น,ว่าง,ทั้งหมด ; …</text>
+    <text x="14" y="122" class="s">ว่าง = -1 → กล้องออฟไลน์</text>
+    <text x="14" y="140" class="s">ข้อความสั้น เหมาะกับไมโครคอนโทรลเลอร์</text>
+  </g>
+
+  <!-- legend -->
+  <g transform="translate(1290,860)">
+    <rect width="270" height="82" rx="14" fill="#ffffff08" stroke="#1f2e4d"/>
+    <g font-size="12">
+      <circle cx="20" cy="22" r="6" fill="#22d39a"/><text x="32" y="26" class="m">ว่าง (free)</text>
+      <circle cx="120" cy="22" r="6" fill="#ff4d5e"/><text x="132" y="26" class="m">ไม่ว่าง (occupied)</text>
+      <circle cx="20" cy="46" r="6" fill="#ffc93c"/><text x="32" y="50" class="m">ไม่ทราบ (unknown)</text>
+      <path d="M120 66h40" class="flow"/><text x="168" y="70" class="m">ทิศทางข้อมูล</text>
+    </g>
+  </g>
+</svg>

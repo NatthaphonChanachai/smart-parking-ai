@@ -1,0 +1,624 @@
+[
+  {
+    "id": "b608cad9aecc6bc4",
+    "type": "tab",
+    "label": "Smart Parking",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "70d3bfe66d556c92",
+    "type": "inject",
+    "z": "b608cad9aecc6bc4",
+    "name": "ตั้งค่า ROI ตอน Deploy",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": true,
+    "onceDelay": 0.5,
+    "payload": "",
+    "payloadType": "date",
+    "x": 180,
+    "y": 40,
+    "wires": [
+      [
+        "c870e15e0e48de6c"
+      ]
+    ]
+  },
+  {
+    "id": "c870e15e0e48de6c",
+    "type": "function",
+    "z": "b608cad9aecc6bc4",
+    "name": "Init ROI (แก้ช่องจอดที่นี่)",
+    "func": "// ตารางช่องจอดของทุกกล้อง (แก้ที่นี่ที่เดียว แล้วกด Deploy)\n// x1-x2 = ช่วงจุดกึ่งกลางกล่องรถ เป็นสัดส่วนของความกว้างภาพ (0-1)\nflow.set(\"CAMS\", {\n  \"2A-C01\": [\n    {id: \"01\", x1: 0.00, x2: 0.33, type: \"pwd\"},\n    {id: \"02\", x1: 0.33, x2: 0.67, type: \"normal\"},\n    {id: \"03\", x1: 0.67, x2: 1.00, type: \"normal\"}\n  ],\n  \"2A-C02\": [\n    {id: \"04\", x1: 0.00, x2: 0.65, type: \"pwd\"},\n    {id: \"05\", x1: 0.65, x2: 1.00, type: \"normal\"}\n  ],\n  \"2A-C03\": [\n    {id: \"06\", x1: 0.00, x2: 0.33, type: \"normal\"},\n    {id: \"07\", x1: 0.33, x2: 0.66, type: \"normal\"},\n    {id: \"08\", x1: 0.66, x2: 1.00, type: \"normal\"}\n  ],\n  // เว็บแคมจับโมเดลลานจอดจำลอง -> CiRA MQTT Pub topic: parking/raw/2A-C04\n  // 2 แถว x 6 ช่อง มองจากด้านบน (ภาพแนวตั้ง) ช่องกลาง x 0.40-0.60 = ทางวิ่ง ไม่นับ\n  // ค่าประมาณจากรูปถ่าย -> ปรับ x/y ตามภาพจริงจากเว็บแคม\n  \"2A-C04\": [\n    // แถวซ้าย บน->ล่าง\n    {id: \"09\", x1: 0.00, x2: 0.40, y1: 0.13, y2: 0.25, type: \"normal\"},\n    {id: \"10\", x1: 0.00, x2: 0.40, y1: 0.25, y2: 0.37, type: \"normal\"},\n    {id: \"11\", x1: 0.00, x2: 0.40, y1: 0.37, y2: 0.49, type: \"normal\"},\n    {id: \"12\", x1: 0.00, x2: 0.40, y1: 0.49, y2: 0.62, type: \"normal\"},\n    {id: \"13\", x1: 0.00, x2: 0.40, y1: 0.62, y2: 0.75, type: \"normal\"},\n    {id: \"14\", x1: 0.00, x2: 0.40, y1: 0.75, y2: 0.90, type: \"normal\"},\n    // แถวขวา บน->ล่าง\n    {id: \"15\", x1: 0.60, x2: 1.00, y1: 0.13, y2: 0.25, type: \"normal\"},\n    {id: \"16\", x1: 0.60, x2: 1.00, y1: 0.25, y2: 0.37, type: \"normal\"},\n    {id: \"17\", x1: 0.60, x2: 1.00, y1: 0.37, y2: 0.49, type: \"normal\"},\n    {id: \"18\", x1: 0.60, x2: 1.00, y1: 0.49, y2: 0.62, type: \"normal\"},\n    {id: \"19\", x1: 0.60, x2: 1.00, y1: 0.62, y2: 0.75, type: \"normal\"},\n    {id: \"20\", x1: 0.60, x2: 1.00, y1: 0.75, y2: 0.90, type: \"normal\"}\n  ]\n});\n// ชื่อชั้นที่แสดงบน dashboard / ป้าย LCD\nflow.set(\"LABEL\", {\"2A-C01\": \"Floor 1\", \"2A-C02\": \"Floor 2\", \"2A-C03\": \"Floor 3\", \"2A-C04\": \"Floor 4\"});\nflow.set(\"lastSeen\", {});\nflow.set(\"camStats\", {});\nflow.set(\"offline\", {});\nflow.set(\"slotState\", {});\nreturn null;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 440,
+    "y": 40,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "bc33ac9d43a0a8f8",
+    "type": "comment",
+    "z": "b608cad9aecc6bc4",
+    "name": "จำลองข้อมูล (ไม่ต้องรอ CiRA CORE)",
+    "x": 210,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "90eeac6a20fbd090",
+    "type": "inject",
+    "z": "b608cad9aecc6bc4",
+    "name": "C01: ช่องคนพิการว่าง",
+    "props": [
+      {
+        "p": "payload"
+      },
+      {
+        "p": "topic",
+        "vt": "str"
+      },
+      {
+        "p": "sim",
+        "v": "true",
+        "vt": "bool"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "parking/raw/2A-C01",
+    "payload": "{\"DeepDetect\": {\"im_w\": 1920, \"im_h\": 1080, \"objects\": [{\"confidence\": 0.99, \"id\": 1, \"name\": \"Avalible\", \"x\": 290, \"y\": 740, \"w\": 500, \"h\": 440}, {\"confidence\": 0.99, \"id\": 0, \"name\": \"Occupied\", \"x\": 1000, \"y\": 690, \"w\": 560, \"h\": 440}, {\"confidence\": 0.99, \"id\": 0, \"name\": \"Occupied\", \"x\": 1560, \"y\": 690, \"w\": 600, \"h\": 440}]}}",
+    "payloadType": "json",
+    "x": 190,
+    "y": 140,
+    "wires": [
+      [
+        "0828be12a20b41b1"
+      ]
+    ]
+  },
+  {
+    "id": "9f021b74435a1b3e",
+    "type": "inject",
+    "z": "b608cad9aecc6bc4",
+    "name": "C01: ช่องคนพิการมีรถ",
+    "props": [
+      {
+        "p": "payload"
+      },
+      {
+        "p": "topic",
+        "vt": "str"
+      },
+      {
+        "p": "sim",
+        "v": "true",
+        "vt": "bool"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "parking/raw/2A-C01",
+    "payload": "{\"DeepDetect\": {\"im_w\": 1920, \"im_h\": 1080, \"objects\": [{\"confidence\": 0.99, \"id\": 0, \"name\": \"Occupied\", \"x\": 290, \"y\": 690, \"w\": 500, \"h\": 440}, {\"confidence\": 0.99, \"id\": 0, \"name\": \"Occupied\", \"x\": 1000, \"y\": 690, \"w\": 560, \"h\": 440}, {\"confidence\": 0.99, \"id\": 0, \"name\": \"Occupied\", \"x\": 1560, \"y\": 690, \"w\": 600, \"h\": 440}]}}",
+    "payloadType": "json",
+    "x": 190,
+    "y": 190,
+    "wires": [
+      [
+        "0828be12a20b41b1"
+      ]
+    ]
+  },
+  {
+    "id": "50460f6f465f0eb7",
+    "type": "inject",
+    "z": "b608cad9aecc6bc4",
+    "name": "C02: คนพิการว่าง + Beetle",
+    "props": [
+      {
+        "p": "payload"
+      },
+      {
+        "p": "topic",
+        "vt": "str"
+      },
+      {
+        "p": "sim",
+        "v": "true",
+        "vt": "bool"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "parking/raw/2A-C02",
+    "payload": "{\"DeepDetect\": {\"im_w\": 1920, \"im_h\": 1080, \"objects\": [{\"confidence\": 0.99, \"id\": 1, \"name\": \"Avalible\", \"x\": 835, \"y\": 740, \"w\": 690, \"h\": 440}, {\"confidence\": 0.99, \"id\": 1, \"name\": \"Avalible\", \"x\": 832, \"y\": 742, \"w\": 730, \"h\": 440}, {\"confidence\": 0.99, \"id\": 0, \"name\": \"Occupied\", \"x\": 1575, \"y\": 690, \"w\": 670, \"h\": 440}]}}",
+    "payloadType": "json",
+    "x": 190,
+    "y": 240,
+    "wires": [
+      [
+        "0828be12a20b41b1"
+      ]
+    ]
+  },
+  {
+    "id": "4f11c15a0150d68c",
+    "type": "inject",
+    "z": "b608cad9aecc6bc4",
+    "name": "C03: ช่องกลางว่าง",
+    "props": [
+      {
+        "p": "payload"
+      },
+      {
+        "p": "topic",
+        "vt": "str"
+      },
+      {
+        "p": "sim",
+        "v": "true",
+        "vt": "bool"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "parking/raw/2A-C03",
+    "payload": "{\"DeepDetect\": {\"im_w\": 1920, \"im_h\": 1080, \"objects\": [{\"confidence\": 0.99, \"id\": 0, \"name\": \"Occupied\", \"x\": 274, \"y\": 690, \"w\": 549, \"h\": 440}, {\"confidence\": 0.99, \"id\": 1, \"name\": \"Avalible\", \"x\": 933, \"y\": 740, \"w\": 521, \"h\": 440}, {\"confidence\": 0.99, \"id\": 0, \"name\": \"Occupied\", \"x\": 1552, \"y\": 690, \"w\": 715, \"h\": 440}]}}",
+    "payloadType": "json",
+    "x": 190,
+    "y": 290,
+    "wires": [
+      [
+        "0828be12a20b41b1"
+      ]
+    ]
+  },
+  {
+    "id": "d9bc01cc4e2dcf80",
+    "type": "mqtt in",
+    "z": "b608cad9aecc6bc4",
+    "name": "ข้อมูลดิบจาก CiRA CORE",
+    "topic": "parking/raw/+",
+    "qos": "0",
+    "datatype": "json",
+    "broker": "broker1",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 200,
+    "y": 360,
+    "wires": [
+      [
+        "0828be12a20b41b1"
+      ]
+    ]
+  },
+  {
+    "id": "0828be12a20b41b1",
+    "type": "function",
+    "z": "b608cad9aecc6bc4",
+    "name": "Slot Logic",
+    "func": "// DeepDetect -> สถานะช่อง (dedupe + debounce) -> MQTT\nconst CAMS = flow.get(\"CAMS\");\nif (!CAMS || !msg.topic) return null;\nconst cam = msg.topic.split(\"/\")[2];\nconst slots = CAMS[cam];\nif (!slots) return null;\nconst zone = cam.split(\"-\")[0];\n\nconst root = msg.payload && (msg.payload.payload || msg.payload);\nconst dd = root && root.DeepDetect;\nif (!dd) return null;\n\nconst CONF = 0.5;\nconst DEBOUNCE_MS = msg.sim ? 0 : 5000;\nconst W = dd.im_w || 1920;\nconst H = dd.im_h || 1080;\n\nconst seen = flow.get(\"lastSeen\") || {};\nconst off = flow.get(\"offline\") || {};\nconst states = context.get(\"state\") || {};\n\n// กล้องกลับมาออนไลน์ -> เริ่มตัดสินใหม่\nif (off[cam]) {\n  for (const s of slots) delete states[cam + \"-\" + s.id];\n  off[cam] = false;\n  flow.set(\"offline\", off);\n}\nseen[cam] = Date.now();\nflow.set(\"lastSeen\", seen);\n\n// สุขภาพกล้อง: fps, ความมั่นใจเฉลี่ย, กล่องที่ตรวจจับ (ให้ dashboard วาด \"มุมมอง AI\")\nconst H0 = dd.im_h || 1080;\nconst cstat = flow.get(\"camStats\") || {};\nconst cs0 = cstat[cam] || {n: 0};\nconst tnow = Date.now();\nif (cs0.last) { const f = 1000 / Math.max(tnow - cs0.last, 1); cs0.fps = cs0.fps ? cs0.fps * 0.85 + f * 0.15 : f; }\ncs0.last = tnow; cs0.n++;\nconst objs = dd.objects || [];\ncs0.conf = objs.length ? objs.reduce((a, o) => a + o.confidence, 0) / objs.length : null;\ncs0.ar = W / H0;\ncs0.boxes = objs.slice(0, 40).map(o => ({x: +(o.x / W).toFixed(4), y: +(o.y / H0).toFixed(4),\n  w: +((o.w || 0) / W).toFixed(4), h: +((o.h || 0) / H0).toFixed(4), n: o.name, c: +o.confidence.toFixed(2)}));\ncstat[cam] = cs0;\nflow.set(\"camStats\", cstat);\n\nconst out = [];\nfor (const s of slots) {\n  // หลายกล่องในช่องเดียว (โมเดลตรวจซ้ำ) -> เอา confidence สูงสุดของแต่ละ class\n  let occ = 0, avl = 0;\n  for (const o of (dd.objects || [])) {\n    const cx = o.x / W;                 // x = จุดกึ่งกลางกล่อง\n    if (cx < s.x1 || cx >= s.x2) continue;\n    // ช่องที่มี y1/y2 (กล้องมองด้านบน) -> เช็คแกน y ด้วย\n    if (s.y1 !== undefined) {\n      const cy = o.y / H;\n      if (cy < s.y1 || cy >= s.y2) continue;\n    }\n    if (o.name === \"Occupied\") occ = Math.max(occ, o.confidence);\n    else if (o.name === \"Avalible\") avl = Math.max(avl, o.confidence);\n  }\n  let status = null;\n  if (occ >= CONF && occ >= avl) status = \"occupied\";\n  else if (avl >= CONF) status = \"free\";\n  if (!status) continue;               // ไม่มีหลักฐาน -> คงสถานะเดิม\n\n  const key = cam + \"-\" + s.id;\n  const st = states[key] || {cur: null, pend: status, since: Date.now()};\n  if (status !== st.pend) { st.pend = status; st.since = Date.now(); }\n  if (st.pend !== st.cur && Date.now() - st.since >= DEBOUNCE_MS) {\n    st.cur = st.pend;\n    out.push({\n      topic: \"parking/\" + zone + \"/slot/\" + s.id,\n      payload: {status: st.cur, type: s.type, cam: cam,\n                conf: +Math.max(occ, avl).toFixed(2)},\n      retain: true\n    });\n  }\n  states[key] = st;\n}\ncontext.set(\"state\", states);\nreturn out.length ? [out] : null;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 520,
+    "y": 250,
+    "wires": [
+      [
+        "ce82905d527bd351"
+      ]
+    ]
+  },
+  {
+    "id": "ce82905d527bd351",
+    "type": "mqtt out",
+    "z": "b608cad9aecc6bc4",
+    "name": "",
+    "topic": "",
+    "qos": "1",
+    "retain": "",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "broker1",
+    "x": 770,
+    "y": 260,
+    "wires": []
+  },
+  {
+    "id": "cc47c49ac79e3023",
+    "type": "inject",
+    "z": "b608cad9aecc6bc4",
+    "name": "ตรวจกล้องทุก 2 วิ",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "2",
+    "crontab": "",
+    "once": true,
+    "onceDelay": 1,
+    "payload": "",
+    "payloadType": "date",
+    "x": 190,
+    "y": 430,
+    "wires": [
+      [
+        "20ca039aecb8f0c4"
+      ]
+    ]
+  },
+  {
+    "id": "20ca039aecb8f0c4",
+    "type": "function",
+    "z": "b608cad9aecc6bc4",
+    "name": "Watchdog รายกล้อง",
+    "func": "// กล้องหลุดรายตัว: ไม่มีเฟรมเกิน 10 วินาที -> ช่องของกล้องนั้นเป็น \"unknown\"\nconst CAMS = flow.get(\"CAMS\");\nif (!CAMS) return null;\nconst seen = flow.get(\"lastSeen\") || {};\nconst off = flow.get(\"offline\") || {};\nconst out = [];\nfor (const cam in seen) {\n  if (Date.now() - seen[cam] > 10000 && !off[cam]) {\n    off[cam] = true;\n    for (const s of CAMS[cam]) {\n      out.push({\n        topic: \"parking/\" + cam.split(\"-\")[0] + \"/slot/\" + s.id,\n        payload: {status: \"unknown\", type: s.type, cam: cam, conf: null},\n        retain: true\n      });\n    }\n  }\n}\nflow.set(\"offline\", off);\nreturn out.length ? [out] : null;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 490,
+    "y": 430,
+    "wires": [
+      [
+        "ce82905d527bd351"
+      ]
+    ]
+  },
+  {
+    "id": "868ba54fddec86aa",
+    "type": "mqtt in",
+    "z": "b608cad9aecc6bc4",
+    "name": "",
+    "topic": "parking/2A/slot/+",
+    "qos": "1",
+    "datatype": "json",
+    "broker": "broker1",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 190,
+    "y": 510,
+    "wires": [
+      [
+        "4fce5f3209fe695f"
+      ]
+    ]
+  },
+  {
+    "id": "4fce5f3209fe695f",
+    "type": "function",
+    "z": "b608cad9aecc6bc4",
+    "name": "รวมสถานะทุกช่อง",
+    "func": "// รวมสถานะทุกช่อง + บันทึกเหตุการณ์/ประวัติ\nconst id = msg.topic.split(\"/\").pop();\nconst now = Date.now();\nconst st = flow.get(\"slotState\") || {};\nconst prev = st[id] ? st[id].status : null;\nconst cur = msg.payload.status;\nconst prevTs = st[id] ? st[id].ts : now;\nst[id] = Object.assign({}, msg.payload, {ts: now});\nflow.set(\"slotState\", st);\nif (prev !== cur) {\n  if (prev !== null) {\n    const ev = flow.get(\"events\") || [];\n    ev.unshift({t: now, id: id, from: prev, to: cur});\n    flow.set(\"events\", ev.slice(0, 30));\n  }\n  // สถิติรายวัน\n  const stats = flow.get(\"stats\") || {};\n  const today = new Date().toDateString();\n  if (stats.day !== today) Object.assign(stats, {day: today, entries: 0, exits: 0, stays: [], peak: 0, peakT: null});\n  if (prev === \"free\" && cur === \"occupied\") stats.entries++;\n  if (prev === \"occupied\" && cur === \"free\") { stats.exits++; stats.stays.push(now - prevTs); stats.stays = stats.stays.slice(-200); }\n  const occN = Object.values(st).filter(s => s.status === \"occupied\").length;\n  if (occN > stats.peak) { stats.peak = occN; stats.peakT = now; }\n  flow.set(\"stats\", stats);\n  const v = Object.values(st);\n  const h = flow.get(\"history\") || [];\n  h.push({t: now, free: v.filter(s => s.status === \"free\").length, occ: occN});\n  flow.set(\"history\", h.slice(-300));\n}\nreturn {payload: st};",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 450,
+    "y": 510,
+    "wires": [
+      [
+        "83c47d1754ad36c6"
+      ]
+    ]
+  },
+  {
+    "id": "83c47d1754ad36c6",
+    "type": "ui_template",
+    "z": "b608cad9aecc6bc4",
+    "group": "uigrp",
+    "name": "Dashboard ลานจอด 2A",
+    "order": 1,
+    "width": "8",
+    "height": "6",
+    "format": "<div style=\"font-weight:700;font-size:22px\">\n  ว่างทั้งหมด {{free()}} / 8\n</div>\n<div style=\"font-size:15px;margin-bottom:10px\">\n  ♿ ช่องคนพิการว่าง {{freePwd()}} / 2\n</div>\n<div ng-repeat=\"r in rows\" style=\"margin-bottom:10px\">\n  <div style=\"font-size:12px;opacity:.7;margin-bottom:2px\">{{r.name}}</div>\n  <div style=\"display:flex;gap:8px\">\n    <div ng-repeat=\"id in r.ids\"\n         style=\"flex:1;text-align:center;padding:14px 4px;border-radius:10px;color:#fff;font-weight:700;font-size:16px\"\n         ng-style=\"{'background': color(id)}\">\n      {{icon(id)}} {{id}}<br><span style=\"font-size:13px\">{{label(id)}}</span>\n    </div>\n  </div>\n</div>\n<script>\n(function(scope){\n  scope.rows = [\n    {name: 'กล้อง 2A-C01', ids: ['01','02','03']},\n    {name: 'กล้อง 2A-C02', ids: ['04','05']},\n    {name: 'กล้อง 2A-C03', ids: ['06','07','08']},\n    {name: 'กล้อง 2A-C04', ids: ['09','10','11','12','13','14','15','16','17','18','19','20']}\n  ];\n  var pwd = {'01': true, '04': true};\n  scope.slots = {};\n  scope.$watch('msg', function(msg){\n    if (msg && msg.payload) scope.slots = msg.payload;\n  });\n  function st(i){ return scope.slots[i] ? scope.slots[i].status : null; }\n  scope.free = function(){\n    return Object.keys(scope.slots).filter(function(i){ return st(i) === 'free'; }).length;\n  };\n  scope.freePwd = function(){\n    return Object.keys(pwd).filter(function(i){ return st(i) === 'free'; }).length;\n  };\n  scope.color = function(i){\n    var s = st(i);\n    return s === 'free' ? '#1e7e4a' : s === 'occupied' ? '#c0393b' : '#d4a017';\n  };\n  scope.label = function(i){\n    var s = st(i);\n    return s === 'free' ? 'ว่าง' : s === 'occupied' ? 'ไม่ว่าง' : 'ไม่ทราบ';\n  };\n  scope.icon = function(i){ return pwd[i] ? '♿' : ''; };\n})(scope);\n</script>",
+    "storeOutMessages": true,
+    "fwdInMessages": false,
+    "resendOnRefresh": true,
+    "templateScope": "local",
+    "x": 710,
+    "y": 510,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "7b679a44b359f60f",
+    "type": "comment",
+    "z": "b608cad9aecc6bc4",
+    "name": "หน้า Dashboard แบบเต็มจอ: http://localhost:1880/parking",
+    "x": 280,
+    "y": 600,
+    "wires": []
+  },
+  {
+    "id": "2d4dc36968078f08",
+    "type": "http in",
+    "z": "b608cad9aecc6bc4",
+    "name": "",
+    "url": "/parking",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 150,
+    "y": 650,
+    "wires": [
+      [
+        "0bdcf5257b43dc52"
+      ]
+    ]
+  },
+  {
+    "id": "0bdcf5257b43dc52",
+    "type": "template",
+    "z": "b608cad9aecc6bc4",
+    "name": "หน้าเว็บ Dashboard",
+    "field": "payload",
+    "fieldType": "msg",
+    "format": "html",
+    "syntax": "plain",
+    "template": "<!doctype html><html lang=\"th\"><head><meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>Smart Parking AI · โซน 2A</title>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link href=\"https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&family=JetBrains+Mono:wght@500;800&family=VT323&display=swap\" rel=\"stylesheet\">\n<style>\n:root{--bg:#070d1a;--card:#101a2e;--card2:#0b1324;--line:#1f2e4d;--tx:#eaf0fb;--mut:#8394b8;--org:#ffad3b;--grn:#22d39a;--red:#ff4d5e;--yel:#ffc93c;--blu:#4c8dff;--vio:#a678ff}\n*{box-sizing:border-box;margin:0}\nbody{background:var(--bg);color:var(--tx);font-family:\"IBM Plex Sans Thai\",\"Segoe UI\",Tahoma,sans-serif;min-height:100vh;overflow-x:hidden}\nbody:before{content:\"\";position:fixed;inset:0;z-index:-1;background:radial-gradient(900px 500px at 10% -10%,#1b3270aa,transparent 60%),radial-gradient(700px 500px at 100% 0%,#3b1d6a66,transparent 60%),linear-gradient(#ffffff05 1px,transparent 1px) 0 0/100% 32px,linear-gradient(90deg,#ffffff05 1px,transparent 1px) 0 0/32px 100%}\n.wrap{max-width:1360px;margin:auto;padding:20px}\nheader{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}\n.logo{width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,var(--blu),var(--vio));display:grid;place-items:center;font:800 28px \"JetBrains Mono\",monospace;box-shadow:0 0 30px #4c8dff88}\nh1{font-size:24px;letter-spacing:.01em}h1 em{font-style:normal;background:linear-gradient(90deg,var(--blu),var(--vio));-webkit-background-clip:text;background-clip:text;color:transparent}\n.sub,.lbl{color:var(--mut);font-size:13px}\n.tools{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}\n.btn{background:var(--card);border:1px solid var(--line);color:var(--tx);border-radius:10px;padding:7px 11px;font:inherit;font-size:13px;cursor:pointer;transition:.2s}\n.btn:hover{border-color:var(--blu)}.btn.on{background:#4c8dff22;border-color:var(--blu);color:#cfe0ff}\n.live{text-align:right;font-size:13px;color:var(--mut);min-width:150px}\n.pill{display:inline-flex;gap:6px;align-items:center;color:var(--grn);font-weight:700}.pill.bad{color:var(--red)}\n.dot{width:9px;height:9px;border-radius:50%;background:currentColor;animation:p 1.4s infinite}\n@keyframes p{50%{opacity:.25;transform:scale(1.5)}}\n.grid{display:grid;gap:16px;margin-bottom:16px}\n.hero{grid-template-columns:1.35fr 1.25fr .9fr .9fr}\n.strip{grid-template-columns:repeat(4,1fr)}\n.three{grid-template-columns:1.4fr 1fr 1fr}\n.bays{grid-template-columns:repeat(auto-fit,minmax(330px,1fr))}\n.card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:18px;padding:16px;position:relative;overflow:hidden}\n.lbl{letter-spacing:.05em;margin-bottom:10px;display:flex;align-items:center;gap:6px}\n/* LED sign */\n.sign{background:#020202;border:3px solid #262626;border-radius:12px;padding:10px 18px;display:flex;align-items:center;justify-content:space-between;font-family:\"JetBrains Mono\",monospace;color:var(--org);text-shadow:0 0 16px #ffad3bcc;background-image:radial-gradient(#ffffff0d 1px,transparent 1.2px);background-size:5px 5px}\n.sign b{font-size:72px;line-height:1;font-weight:800;display:inline-block}.sign span{font-size:22px}\n.sign.full{color:var(--red);text-shadow:0 0 16px #ff4d5ecc}.sign.full b{animation:blink 1s steps(2) infinite}\n@keyframes blink{50%{opacity:.25}}\n.flip{animation:flip .5s}@keyframes flip{0%{transform:rotateX(90deg)}100%{transform:none}}\n/* recommendation */\n.rec{display:flex;align-items:center;gap:14px}\n.rec .go{font-size:30px;font-weight:700;line-height:1.15}.rec .go small{display:block;font-size:14px;color:var(--mut);font-weight:400}\n.rec .slotbadge{font:800 15px \"JetBrains Mono\",monospace;background:var(--grn);color:#04140e;border-radius:8px;padding:2px 8px;margin-left:4px}\n.arrows{display:flex;gap:2px;margin-left:auto}\n.arrows i{width:18px;height:30px;background:var(--grn);clip-path:polygon(0 0,55% 0,100% 50%,55% 100%,0 100%,45% 50%);opacity:.15;animation:ar 1.2s infinite}\n.arrows i:nth-child(2){animation-delay:.2s}.arrows i:nth-child(3){animation-delay:.4s}\n@keyframes ar{30%{opacity:1}}\n.rec.full .go{color:var(--red)}.rec.full .arrows{display:none}\n.kpi{font-size:44px;font-weight:700;line-height:1}.kpi small{font-size:17px;color:var(--mut);font-weight:400}\n.ringw{display:flex;align-items:center;gap:12px}\nsvg.ring{width:92px;height:92px;transform:rotate(-90deg)}.ringw b{font-size:32px}\n.mini{font-size:12px;color:var(--mut);margin-top:8px}\n/* stats */\n.stat{display:flex;align-items:center;gap:12px;padding:12px 16px}\n.stat .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:19px;background:#ffffff0c}\n.stat b{font-size:24px;display:block;line-height:1.1}.stat span{font-size:12px;color:var(--mut)}\n/* floors overview */\n.floor{display:grid;grid-template-columns:64px 1fr 56px;gap:10px;align-items:center;margin:9px 0;font-size:14px}\n.bar{height:14px;border-radius:7px;background:#ffffff0d;display:flex;overflow:hidden}\n.bar i{display:block;height:100%;transition:width .8s}\n.bar .f{background:linear-gradient(90deg,#16b07f,var(--grn))}.bar .o{background:linear-gradient(90deg,#d63a4b,var(--red))}.bar .u{background:repeating-linear-gradient(45deg,#ffc93c55 0 6px,#ffc93c22 6px 12px)}\n.floor .n{text-align:right;font-family:\"JetBrains Mono\",monospace;color:var(--mut)}\n.legend{display:flex;gap:14px;font-size:12px;color:var(--mut);margin-top:10px}.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}\n/* bays */\n.bay h3{font-size:15px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px}\n.bay h3 small{color:var(--mut);font-weight:400;font-size:12px;margin-left:6px}\n.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}\n.chip{font-size:11px;color:var(--mut);background:#ffffff0a;border:1px solid var(--line);border-radius:20px;padding:2px 8px;font-family:\"JetBrains Mono\",monospace}\n.tabs{display:flex;background:#ffffff0a;border-radius:9px;padding:2px}\n.tabs button{background:none;border:0;color:var(--mut);font:inherit;font-size:12px;padding:3px 9px;border-radius:7px;cursor:pointer}\n.tabs button.on{background:var(--blu);color:#fff}\n.slots{display:flex;gap:8px;background:#060b16;border-radius:12px;padding:12px;min-height:150px}\n.slots.grid{display:grid;grid-auto-flow:column;column-gap:48px;row-gap:6px;background:#060b16 linear-gradient(90deg,transparent calc(50% - 1px),#ffc93c55 calc(50% - 1px),#ffc93c55 calc(50% + 1px),transparent calc(50% + 1px))}\n.slots.grid .slot{aspect-ratio:2/1}.slots.grid .car{width:70%;height:64%}.slots.grid .P{font-size:22px}\n.slot{flex:1;aspect-ratio:3/4.4;border:2px dashed #34466b;border-radius:10px;position:relative;display:grid;place-items:center;overflow:hidden;transition:.4s;cursor:default}\n.slot.free{border-color:var(--grn);background:#22d39a12}\n.slot.occupied{border-color:var(--red);background:#ff4d5e12}\n.slot.unknown{border-color:var(--yel);background:#ffc93c0f}\n.slot.best{border-style:solid;box-shadow:0 0 0 2px var(--grn),0 0 24px #22d39aaa;animation:glow 1.6s infinite}\n@keyframes glow{50%{box-shadow:0 0 0 2px var(--grn),0 0 6px #22d39a55}}\n.slot.ping:before{content:\"\";position:absolute;inset:0;border-radius:8px;background:#fff;animation:ping .9s ease-out}\n@keyframes ping{from{opacity:.45}to{opacity:0}}\n.led{position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:var(--yel);color:var(--yel);box-shadow:0 0 10px currentColor;z-index:2}\n.free .led{background:var(--grn);color:var(--grn)}.occupied .led{background:var(--red);color:var(--red)}\n.car{position:absolute;width:64%;height:78%;border-radius:20px 20px 12px 12px;transform:translateY(130%);opacity:0;transition:transform .8s cubic-bezier(.2,.8,.2,1),opacity .5s;box-shadow:0 6px 16px #000a}\n.car:before{content:\"\";position:absolute;left:12%;right:12%;top:20%;height:24%;background:#0b1324;border-radius:8px}\n.car:after{content:\"\";position:absolute;left:16%;right:16%;bottom:12%;height:14%;background:#0b132488;border-radius:6px}\n.occupied .car{transform:none;opacity:1}\n.P{font:800 34px \"JetBrains Mono\",monospace;color:var(--grn);opacity:0;transition:.4s}.free .P{opacity:.9}\n.unknown:after{content:\"?\";font:800 30px sans-serif;color:var(--yel);position:absolute}\n.pwd{position:absolute;top:4px;left:5px;font-size:15px;background:var(--blu);border-radius:6px;padding:0 4px;z-index:2}\n.id,.dur{position:absolute;bottom:3px;font-size:10px;color:var(--mut);font-style:normal;z-index:2}\n.id{left:6px}.dur{right:6px}\n.ai{display:none;background:#000;border-radius:12px;overflow:hidden;position:relative}\n.ai svg{display:block;width:100%;height:auto}\n.ai:after{content:\"\";position:absolute;left:0;right:0;height:40%;background:linear-gradient(#4c8dff00,#4c8dff22,#4c8dff00);animation:scan 2.6s linear infinite;pointer-events:none}\n@keyframes scan{from{top:-40%}to{top:100%}}\n.bay.showai .ai{display:block}.bay.showai .slots{display:none}\n.nosig{fill:#8394b8;font:600 16px \"JetBrains Mono\",monospace}\n/* events */\n.ev{list-style:none;font-size:14px;max-height:250px;overflow:auto}.ev li{padding:7px 0;border-bottom:1px solid var(--line);display:flex;gap:10px;animation:in .4s}\n@keyframes in{from{opacity:0;transform:translateX(-8px)}}\n.ev time{color:var(--mut);min-width:64px;font-family:\"JetBrains Mono\",monospace;font-size:12px;padding-top:2px}\n.t-free{color:var(--grn)}.t-occupied{color:var(--red)}.t-unknown{color:var(--yel)}\n/* LCD mirror */\n.lcd{background:#0c6b34;border-radius:10px;padding:12px;box-shadow:inset 0 0 0 4px #0a4f27}\n.lcd pre{background:#a6d33a;border-radius:4px;padding:8px 10px;font:22px/1.05 \"VT323\",monospace;color:#13240a;letter-spacing:.06em;box-shadow:inset 0 0 18px #6c931c;white-space:pre;overflow:hidden}\n.leds{display:flex;gap:10px;margin-top:10px;justify-content:center}\n.leds i{width:16px;height:16px;border-radius:50%;background:#333;box-shadow:0 0 12px currentColor;color:#333}\n/* toast */\n#toasts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:9}\n.toast{background:#101a2ef2;border:1px solid var(--line);border-left:4px solid var(--grn);border-radius:12px;padding:10px 14px;font-size:14px;box-shadow:0 10px 30px #0009;animation:tin .35s;min-width:230px}\n.toast.occupied{border-left-color:var(--red)}.toast.unknown{border-left-color:var(--yel)}\n.toast small{display:block;color:var(--mut);font-size:12px}\n@keyframes tin{from{opacity:0;transform:translateY(12px)}}\nfooter{color:var(--mut);font-size:12px;text-align:center;margin:6px 0 10px}\n@media(max-width:1100px){.hero{grid-template-columns:1fr 1fr}.three{grid-template-columns:1fr}}\n@media(max-width:700px){.wrap{padding:14px 16px}.hero,.strip{grid-template-columns:1fr 1fr}.hero>.card:first-child,.hero>.card:nth-child(2){grid-column:1/-1}.sign b{font-size:54px}.live{min-width:0}.bays{grid-template-columns:1fr}}\n</style></head><body><div class=\"wrap\">\n<header><div class=\"logo\">P</div><div><h1>Smart Parking <em>AI</em></h1><div class=\"sub\">อาคารจอดรถ มหาวิทยาลัยศรีปทุม · โซน 2A</div></div>\n<div class=\"tools\">\n<button class=\"btn\" id=\"bSnd\" title=\"เสียงแจ้งเตือนเมื่อช่องเปลี่ยนสถานะ\">🔔 เสียง</button>\n<button class=\"btn\" id=\"bVoice\" title=\"ประกาศเสียงพูดภาษาไทย\">🗣️ ประกาศ</button>\n<button class=\"btn\" id=\"bFs\" title=\"เต็มจอ (โหมดป้ายประกาศ)\">⛶ เต็มจอ</button>\n<div class=\"live\"><span class=\"pill\" id=\"pill\"><i class=\"dot\"></i><span id=\"pt\">LIVE</span></span><div id=\"clk\"></div></div></div></header>\n\n<div class=\"grid hero\">\n <div class=\"card\"><div class=\"lbl\">🪧 ป้ายหน้าทางลาด</div><div class=\"sign\" id=\"sign\"><span>2A ว่าง</span><b id=\"free\">--</b><span>/ <i id=\"tot\" style=\"font-style:normal\">-</i></span></div></div>\n <div class=\"card\"><div class=\"lbl\">🧭 แนะนำที่จอด</div><div class=\"rec\" id=\"rec\"><div class=\"go\" id=\"go\">--</div><div class=\"arrows\"><i></i><i></i><i></i></div></div><div class=\"mini\" id=\"recsub\"></div></div>\n <div class=\"card\"><div class=\"lbl\">📊 อัตราการใช้งาน</div><div class=\"ringw\"><svg class=\"ring\" viewBox=\"0 0 120 120\"><circle cx=\"60\" cy=\"60\" r=\"50\" fill=\"none\" stroke=\"#1f2e4d\" stroke-width=\"12\"/><circle id=\"arc\" cx=\"60\" cy=\"60\" r=\"50\" fill=\"none\" stroke=\"url(#g1)\" stroke-width=\"12\" stroke-linecap=\"round\" stroke-dasharray=\"0 314\" style=\"transition:stroke-dasharray .8s\"/><defs><linearGradient id=\"g1\"><stop offset=\"0\" stop-color=\"#ffad3b\"/><stop offset=\"1\" stop-color=\"#ff4d5e\"/></linearGradient></defs></svg><b id=\"pct\">0%</b></div></div>\n <div class=\"card\"><div class=\"lbl\">♿ ช่องคนพิการว่าง</div><div class=\"kpi\" id=\"pwd\">-</div><div class=\"mini\">📷 กล้องออนไลน์ <b id=\"cam\" style=\"color:var(--tx)\">-</b></div></div>\n</div>\n\n<div class=\"grid strip\">\n <div class=\"card stat\"><div class=\"ic\">🚗</div><div><b id=\"sIn\">0</b><span>เข้าจอดวันนี้</span></div></div>\n <div class=\"card stat\"><div class=\"ic\">🏁</div><div><b id=\"sOut\">0</b><span>ออกวันนี้</span></div></div>\n <div class=\"card stat\"><div class=\"ic\">⏱️</div><div><b id=\"sAvg\">-</b><span>เวลาจอดเฉลี่ย</span></div></div>\n <div class=\"card stat\"><div class=\"ic\">🔥</div><div><b id=\"sPeak\">-</b><span id=\"sPeakT\">จอดสูงสุดวันนี้</span></div></div>\n</div>\n\n<div class=\"grid bays\" id=\"bays\"></div>\n\n<div class=\"grid three\">\n <div class=\"card\"><div class=\"lbl\">📈 ช่องว่าง / ไม่ว่าง ตามเวลา</div><svg id=\"chart\" viewBox=\"0 0 600 190\" style=\"width:100%\"></svg>\n  <div class=\"legend\"><span><i style=\"background:var(--grn)\"></i>ว่าง</span><span><i style=\"background:var(--red)\"></i>ไม่ว่าง</span></div></div>\n <div class=\"card\"><div class=\"lbl\">🏢 ภาพรวมรายชั้น</div><div id=\"floors\"></div>\n  <div class=\"legend\"><span><i style=\"background:var(--grn)\"></i>ว่าง</span><span><i style=\"background:var(--red)\"></i>ไม่ว่าง</span><span><i style=\"background:#ffc93c66\"></i>ไม่ทราบ</span></div>\n  <div class=\"lbl\" style=\"margin-top:16px\">📟 ป้าย LCD หน้าลานจอด (ESP32)</div><div class=\"lcd\"><pre id=\"lcd\"></pre></div><div class=\"leds\" id=\"leds\"></div></div>\n <div class=\"card\"><div class=\"lbl\">🕑 เหตุการณ์ล่าสุด</div><ul class=\"ev\" id=\"ev\"></ul></div>\n</div>\n<footer>CiRA CORE → Mosquitto → Node-RED → Dashboard · ESP32 · อัปเดตทุก 1 วินาที</footer>\n</div>\n<div id=\"toasts\"></div>\n<script>\nconst $=s=>document.querySelector(s),COL=['#eef2fa','#9aa7bd','#3a4558','#c9d3e6','#2b3a63','#c0392b','#2d6cdf'],TH={free:'ว่าง',occupied:'ไม่ว่าง',unknown:'ไม่ทราบ'};\nlet D=null,built=false,prev=null,lastFree=null,lcdPage=0;\nconst two=n=>String(n).padStart(2,'0');\nconst store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};\nconst opt={snd:store.get('snd')==='1',voice:store.get('voice')==='1'};\nfunction dur(ms){const m=Math.floor(ms/6e4);return m<1?'<1 นาที':m<60?m+' นาที':Math.floor(m/60)+' ชม. '+m%60+' น.'}\nfunction ago(ms){return ms==null?'-':ms<2000?'เมื่อกี้':Math.round(ms/1000)+'s'}\n/* sound + voice */\nlet AC=null;\nfunction beep(up){if(!opt.snd)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;(up?[660,880]:[520,390]).forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(.0001,t+i*.14);g.gain.exponentialRampToValueAtTime(.25,t+i*.14+.02);g.gain.exponentialRampToValueAtTime(.0001,t+i*.14+.22);o.connect(g).connect(AC.destination);o.start(t+i*.14);o.stop(t+i*.14+.25)})}catch(e){}}\nfunction say(t){if(!opt.voice||!window.speechSynthesis)return;const u=new SpeechSynthesisUtterance(t);u.lang='th-TH';u.rate=1;speechSynthesis.speak(u)}\nfunction toast(cls,title,sub){const el=document.createElement('div');el.className='toast '+cls;el.innerHTML=title+'<small>'+sub+'</small>';$('#toasts').prepend(el);setTimeout(()=>el.remove(),5000);const all=$('#toasts').children;if(all.length>4)all[all.length-1].remove()}\nfunction setBtn(){$('#bSnd').classList.toggle('on',opt.snd);$('#bVoice').classList.toggle('on',opt.voice)}\n$('#bSnd').onclick=()=>{opt.snd=!opt.snd;store.set('snd',opt.snd?'1':'0');setBtn();beep(true)};\n$('#bVoice').onclick=()=>{opt.voice=!opt.voice;store.set('voice',opt.voice?'1':'0');setBtn();say('เปิดเสียงประกาศแล้ว')};\n$('#bFs').onclick=()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})};\nsetBtn();\n/* build cards */\nfunction build(){\n $('#bays').innerHTML=Object.entries(D.cams).map(([c,v])=>{\n  const grid=v.cols?` grid\" style=\"grid-template-rows:repeat(${Math.ceil(v.slots.length/v.cols)},1fr);grid-template-columns:repeat(${v.cols},1fr)`:'';\n  return `<div class=\"card bay\" id=\"b-${c}\"><h3><span>${v.label}<small>กล้อง ${c}</small></span><span class=\"tabs\"><button class=\"on\" data-c=\"${c}\" data-v=\"0\">ผังช่อง</button><button data-c=\"${c}\" data-v=\"1\">มุมมอง AI</button></span></h3>\n  <div class=\"chips\" id=\"c-${c}\"></div>\n  <div class=\"slots${grid}\">${v.slots.map((s,i)=>`<div class=\"slot unknown\" id=\"s-${s.id}\"><i class=\"led\"></i><div class=\"car\" style=\"background:${COL[(+s.id*3+i)%COL.length]}\"></div><div class=\"P\">P</div>${s.type==='pwd'?'<span class=\"pwd\">♿</span>':''}<em class=\"id\">${s.id}</em><em class=\"dur\"></em></div>`).join('')}</div>\n  <div class=\"ai\"><svg id=\"ai-${c}\"></svg></div></div>`}).join('');\n document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{const card=$('#b-'+b.dataset.c);card.classList.toggle('showai',b.dataset.v==='1');b.parentNode.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))});\n $('#leds').innerHTML=Object.keys(D.cams).map(c=>`<i id=\"l-${c}\" title=\"${D.cams[c].label}\"></i>`).join('');\n}\nfunction aiView(c,v,S){\n const W=640,H=Math.round(W/(v.ar||16/9)),svg=$('#ai-'+c);svg.setAttribute('viewBox',`0 0 ${W} ${H}`);\n let h=`<rect width=\"${W}\" height=\"${H}\" fill=\"#050912\"/>`;\n v.slots.forEach(s=>{const st=(S[s.id]||{}).status||'unknown',col=st==='free'?'#22d39a':st==='occupied'?'#ff4d5e':'#ffc93c';\n  const y1=s.y1==null?0:s.y1,y2=s.y2==null?1:s.y2;\n  h+=`<rect x=\"${s.x1*W+2}\" y=\"${y1*H+2}\" width=\"${(s.x2-s.x1)*W-4}\" height=\"${(y2-y1)*H-4}\" fill=\"${col}14\" stroke=\"${col}66\" stroke-dasharray=\"6 5\" rx=\"6\"/><text x=\"${s.x1*W+8}\" y=\"${y1*H+20}\" fill=\"${col}\" font-size=\"15\" font-family=\"JetBrains Mono\" font-weight=\"800\">${s.id}</text>`});\n v.boxes.forEach(b=>{const col=b.n==='Occupied'?'#ff4bf0':'#9dff3a',x=(b.x-b.w/2)*W,y=(b.y-b.h/2)*H,lab=`${b.n==='Occupied'?'Occupied':'Available'} ${Math.round(b.c*100)}%`;\n  h+=`<rect x=\"${x}\" y=\"${y}\" width=\"${b.w*W}\" height=\"${b.h*H}\" fill=\"none\" stroke=\"${col}\" stroke-width=\"2.5\"/><rect x=\"${x}\" y=\"${y-17}\" width=\"${lab.length*7.6+8}\" height=\"17\" fill=\"${col}\"/><text x=\"${x+4}\" y=\"${y-4}\" font-size=\"12\" font-family=\"JetBrains Mono\" font-weight=\"800\" fill=\"#000\">${lab}</text><circle cx=\"${b.x*W}\" cy=\"${b.y*H}\" r=\"3.5\" fill=\"${col}\"/>`});\n if(!v.online)h+=`<text class=\"nosig\" x=\"${W/2}\" y=\"${H/2}\" text-anchor=\"middle\">NO SIGNAL</text>`;\n svg.innerHTML=h;\n}\n/* ESP32 LCD mirror (same layout as firmware page 1) */\nfunction lcdText(fl){\n const tf=fl.reduce((a,f)=>a+(f.free>0?f.free:0),0),tt=fl.reduce((a,f)=>a+f.total,0),rows=[];\n if(fl.length<4)rows.push(('FREE '+tf+'/'+tt).padEnd(14)+new Date().toLocaleTimeString('en-GB').slice(0,5).padStart(6));\n fl.slice(0,4).forEach(f=>{const nm='F'+(f.label.match(/\\d+$/)||[f.label[0]])[0];\n  if(f.free<0){rows.push((nm.padEnd(3)+'-- OFFLINE --').padEnd(20));return}\n  const n=Math.round(f.free/f.total*8),bar='█'.repeat(n)+'░'.repeat(8-n),ft=(f.free+'/'+f.total).padStart(5);\n  rows.push((nm.padEnd(3)+bar+' '+ft+' '+(f.free?'✓':'✗')).padEnd(20).slice(0,20))});\n while(rows.length<4)rows.push(''.padEnd(20));\n return rows.join('\\n');\n}\nfunction render(){\n const S=D.slots,cs=Object.entries(D.cams),all=cs.flatMap(([c,v])=>v.slots);\n let f=0,o=0,pf=0,pt=0;const fl=[];\n cs.forEach(([c,v])=>{let cf=0,co=0;v.slots.forEach(s=>{const x=S[s.id],st=x?x.status:'unknown';\n  if(st==='free'){f++;cf++;if(s.type==='pwd')pf++}if(st==='occupied'){o++;co++}if(s.type==='pwd')pt++;\n  const el=$('#s-'+s.id);el.className='slot '+st+(D.rec&&D.rec.slot===s.id?' best':'');el.querySelector('.dur').textContent=x&&st!=='unknown'?dur(D.now-x.ts):'';\n  el.title=`ช่อง ${s.id} · ${TH[st]}`+(x&&x.conf!=null?` · ความมั่นใจ ${Math.round(x.conf*100)}%`:'')+(x?` · ตั้งแต่ ${new Date(x.ts).toLocaleTimeString('th-TH')}`:'');\n  if(prev&&prev[s.id]&&prev[s.id].status!==st){el.classList.add('ping');setTimeout(()=>el.classList.remove('ping'),900)}});\n  const n=v.slots.length,known=cf+co;\n  fl.push({c,label:v.label,free:v.online&&known?cf:-1,occ:co,total:n,unk:n-known,online:v.online});\n  $('#c-'+c).innerHTML=`<span class=\"chip\" style=\"color:${v.online?'var(--grn)':'var(--yel)'}\">● ${v.online?'ออนไลน์':'ออฟไลน์'}</span><span class=\"chip\">ว่าง ${cf}/${n}</span><span class=\"chip\">${v.fps} fps</span><span class=\"chip\">AI ${v.conf!=null?Math.round(v.conf*100)+'%':'-'}</span><span class=\"chip\">ล่าสุด ${ago(v.age)}</span>`;\n  aiView(c,v,S);\n  const led=$('#l-'+c);const lc=!v.online?'#3a4a6b':cf===0?'#ff4d5e':cf/n<.34?'#ffc93c':'#22d39a';led.style.background=lc;led.style.color=lc});\n const n=all.length,pct=n?Math.round(o/n*100):0;\n if(lastFree!==null&&lastFree!==f){$('#free').classList.remove('flip');void $('#free').offsetWidth;$('#free').classList.add('flip')}\n lastFree=f;\n $('#free').textContent=f===0&&o>0?'FULL':two(f);$('#sign').classList.toggle('full',f===0&&o>0);$('#tot').textContent=two(n);\n $('#pct').textContent=pct+'%';$('#arc').setAttribute('stroke-dasharray',(pct*3.14)+' 314');\n $('#pwd').innerHTML=pf+'<small> / '+pt+'</small>';\n $('#cam').textContent=cs.filter(([c,v])=>v.online).length+' / '+cs.length;\n // recommendation\n const r=D.rec;$('#rec').classList.toggle('full',!r);\n if(r){$('#go').innerHTML=`<small>ไปที่</small>${r.label}<span class=\"slotbadge\">${r.slot}</span>`;$('#recsub').textContent=`ชั้นนี้ว่าง ${r.free} ช่อง · กล้อง ${r.cam}`}\n else if(pf>0){$('#rec').classList.remove('full');$('#go').innerHTML='<small>ช่องทั่วไปเต็ม</small>เหลือช่อง ♿ '+pf+' ช่อง';$('#recsub').textContent='สงวนไว้สำหรับผู้พิการ'}\n else{$('#go').innerHTML='<small>ขณะนี้</small>ไม่มีช่องว่าง';$('#recsub').textContent='รอสักครู่ ระบบจะแนะนำทันทีที่มีช่องว่าง'}\n // stats\n const st=D.stats;$('#sIn').textContent=st.entries;$('#sOut').textContent=st.exits;$('#sAvg').textContent=st.avgStay?dur(st.avgStay):'-';\n $('#sPeak').textContent=n?Math.round(st.peak/n*100)+'%':'-';$('#sPeakT').textContent='จอดสูงสุดวันนี้'+(st.peakT?' · '+new Date(st.peakT).toLocaleTimeString('th-TH').slice(0,5):'');\n // floors\n $('#floors').innerHTML=fl.map(x=>`<div class=\"floor\"><span>${x.label}</span><div class=\"bar\"><i class=\"f\" style=\"width:${(x.free>0?x.free:0)/x.total*100}%\"></i><i class=\"o\" style=\"width:${x.occ/x.total*100}%\"></i><i class=\"u\" style=\"width:${x.unk/x.total*100}%\"></i></div><span class=\"n\">${x.free<0?'OFF':x.free+'/'+x.total}</span></div>`).join('');\n $('#lcd').textContent=lcdText(fl);\n // events\n $('#ev').innerHTML=D.events.slice(0,12).map(e=>`<li><time>${new Date(e.t).toLocaleTimeString('th-TH')}</time><span>ช่อง ${e.id}</span><span class=\"t-${e.to}\">${TH[e.from]||'-'} → ${TH[e.to]}</span></li>`).join('')||'<li class=\"lbl\">ยังไม่มีการเปลี่ยนแปลง</li>';\n // chart\n const h=D.history.slice(-90);\n $('#chart').innerHTML=h.length<2?'<text x=\"20\" y=\"95\" fill=\"#8394b8\" font-size=\"15\">รอข้อมูลเพิ่มเติม…</text>':(()=>{const mx=Math.max(n,1),L=34,R=590,T=10,B=160,X=i=>L+i*(R-L)/(h.length-1),Y=v=>B-v/mx*(B-T);\n  let g='';for(let k=0;k<=4;k++){const v=Math.round(mx*k/4);g+=`<line x1=\"${L}\" x2=\"${R}\" y1=\"${Y(v)}\" y2=\"${Y(v)}\" stroke=\"#1f2e4d\"/><text x=\"${L-8}\" y=\"${Y(v)+4}\" fill=\"#8394b8\" font-size=\"11\" text-anchor=\"end\">${v}</text>`}\n  const tm=t=>new Date(t).toLocaleTimeString('th-TH').slice(0,5);\n  g+=`<text x=\"${L}\" y=\"182\" fill=\"#8394b8\" font-size=\"11\">${tm(h[0].t)}</text><text x=\"${R}\" y=\"182\" fill=\"#8394b8\" font-size=\"11\" text-anchor=\"end\">${tm(h[h.length-1].t)}</text>`;\n  const pf=h.map((p,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(p.free).toFixed(1)).join(' ');\n  const po=h.filter(p=>p.occ!=null).length>1?h.map((p,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(p.occ||0).toFixed(1)).join(' '):'';\n  return g+`<defs><linearGradient id=\"gf\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#22d39a\" stop-opacity=\".35\"/><stop offset=\"1\" stop-color=\"#22d39a\" stop-opacity=\"0\"/></linearGradient></defs><path d=\"${pf} L${R} ${B} L${L} ${B}Z\" fill=\"url(#gf)\"/><path d=\"${pf}\" fill=\"none\" stroke=\"#22d39a\" stroke-width=\"2.5\"/>`+(po?`<path d=\"${po}\" fill=\"none\" stroke=\"#ff4d5e\" stroke-width=\"2\" stroke-dasharray=\"5 4\"/>`:'')})();\n // notifications\n if(prev){for(const id in S){const a=prev[id]&&prev[id].status,b=S[id].status;if(a&&a!==b){\n  const cam=cs.find(([c,v])=>v.slots.some(s=>s.id===id)),lab=cam?cam[1].label:'';\n  toast(b,`ช่อง <b>${id}</b> · ${TH[b]}`,`${lab} · ${new Date().toLocaleTimeString('th-TH')}`);\n  if(b!=='unknown'){beep(b==='free');say(`ช่อง ${+id} ${lab.replace('Floor','ชั้น')} ${b==='free'?'ว่างแล้ว':'มีรถเข้าจอด'}`)}}}}\n prev=JSON.parse(JSON.stringify(S));\n}\nasync function tick(){try{const r=await fetch('/api/state',{cache:'no-store'});D=await r.json();if(!built){build();built=true}render();$('#pill').className='pill';$('#pt').textContent='LIVE'}catch(e){$('#pill').className='pill bad';$('#pt').textContent='OFFLINE';console.error(e)}}\nsetInterval(tick,1000);tick();\nsetInterval(()=>$('#clk').textContent=new Date().toLocaleString('th-TH'),1000);\n</script></body></html>\n",
+    "output": "str",
+    "x": 380,
+    "y": 650,
+    "wires": [
+      [
+        "61a996989603703b"
+      ]
+    ]
+  },
+  {
+    "id": "61a996989603703b",
+    "type": "http response",
+    "z": "b608cad9aecc6bc4",
+    "name": "",
+    "statusCode": "200",
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "x": 600,
+    "y": 650,
+    "wires": []
+  },
+  {
+    "id": "5d50c574b5aece21",
+    "type": "http in",
+    "z": "b608cad9aecc6bc4",
+    "name": "",
+    "url": "/api/state",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 160,
+    "y": 710,
+    "wires": [
+      [
+        "9bf2bd4582cca05f"
+      ]
+    ]
+  },
+  {
+    "id": "9bf2bd4582cca05f",
+    "type": "function",
+    "z": "b608cad9aecc6bc4",
+    "name": "State API",
+    "func": "// ข้อมูลทั้งหมดสำหรับหน้า /parking\nconst CAMS = flow.get(\"CAMS\") || {};\nconst LABEL = flow.get(\"LABEL\") || {};\nconst seen = flow.get(\"lastSeen\") || {}, off = flow.get(\"offline\") || {};\nconst cstat = flow.get(\"camStats\") || {};\nconst S = flow.get(\"slotState\") || {};\nconst now = Date.now();\nconst cams = {};\nlet rec = null;\nfor (const c in CAMS) {\n  const online = !!seen[c] && !off[c];\n  const cs = cstat[c] || {};\n  const free = CAMS[c].filter(s => S[s.id] && S[s.id].status === \"free\");\n  cams[c] = {\n    label: LABEL[c] || c,\n    slots: CAMS[c].map(s => ({id: s.id, type: s.type, x1: s.x1, x2: s.x2, y1: s.y1, y2: s.y2})),\n    online: online,\n    // ช่องแบบ 2 มิติ (มี y1) -> บอกจำนวนคอลัมน์ให้ dashboard จัดเป็นตาราง\n    cols: CAMS[c][0].y1 !== undefined ? new Set(CAMS[c].map(s => s.x1)).size : 0,\n    age: seen[c] ? now - seen[c] : null,\n    fps: online && cs.fps ? +cs.fps.toFixed(1) : 0,\n    conf: cs.conf != null ? +cs.conf.toFixed(2) : null,\n    ar: cs.ar || 16 / 9,\n    boxes: online ? (cs.boxes || []) : []\n  };\n  // แนะนำ: ชั้นที่ออนไลน์และว่างมากที่สุด -> ช่องธรรมดาช่องแรกที่ว่าง\n  const normal = free.filter(s => s.type !== \"pwd\");\n  if (online && normal.length && (!rec || normal.length > rec.free))\n    rec = {cam: c, label: cams[c].label, slot: normal[0].id, free: normal.length};\n}\nconst st = flow.get(\"stats\") || {};\nconst stays = st.stays || [];\nmsg.payload = {\n  now: now, cams: cams, slots: S, rec: rec,\n  events: flow.get(\"events\") || [], history: flow.get(\"history\") || [],\n  stats: {entries: st.entries || 0, exits: st.exits || 0, peak: st.peak || 0, peakT: st.peakT || null,\n          avgStay: stays.length ? Math.round(stays.reduce((a, b) => a + b, 0) / stays.length) : null}\n};\nreturn msg;\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 380,
+    "y": 710,
+    "wires": [
+      [
+        "235809fd869e38be"
+      ]
+    ]
+  },
+  {
+    "id": "235809fd869e38be",
+    "type": "http response",
+    "z": "b608cad9aecc6bc4",
+    "name": "",
+    "statusCode": "200",
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "x": 600,
+    "y": 710,
+    "wires": []
+  },
+  {
+    "id": "c491b1735131a966",
+    "type": "inject",
+    "z": "b608cad9aecc6bc4",
+    "name": "ส่งสรุปทุก 2 วิ",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "2",
+    "crontab": "",
+    "once": true,
+    "onceDelay": 2,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 200,
+    "y": 780,
+    "wires": [
+      [
+        "19116ac0d7fb209a"
+      ]
+    ]
+  },
+  {
+    "id": "19116ac0d7fb209a",
+    "type": "function",
+    "z": "b608cad9aecc6bc4",
+    "name": "สรุปช่องว่างต่อชั้น",
+    "func": "// สรุปจำนวนช่องว่างต่อชั้น -> ส่งให้ ESP32 บน Wokwi\nconst CAMS = flow.get(\"CAMS\");\nif (!CAMS) return null;\nconst S = flow.get(\"slotState\") || {};\n// เปลี่ยนชื่อชั้นตรงนี้ (ตอนนี้ 1 กล้อง = 1 ชั้น)\nconst LABEL = {\"2A-C01\": \"Floor 1\", \"2A-C02\": \"Floor 2\", \"2A-C03\": \"Floor 3\", \"2A-C04\": \"Floor 4\"};\nconst parts = [];\nfor (const cam in CAMS) {\n  let free = 0, known = 0;\n  for (const s of CAMS[cam]) {\n    const st = S[s.id] && S[s.id].status;\n    if (st === \"free\") free++;\n    if (st === \"free\" || st === \"occupied\") known++;\n  }\n  parts.push((LABEL[cam] || cam) + \",\" + (known ? free : -1) + \",\" + CAMS[cam].length);\n}\nreturn {topic: \"cpe447-happywheel-7f3a/parking/summary\", payload: parts.join(\";\"), retain: true};",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 460,
+    "y": 780,
+    "wires": [
+      [
+        "c575b3cf2417611c",
+        "0da1c715b7e35386"
+      ]
+    ]
+  },
+  {
+    "id": "c575b3cf2417611c",
+    "type": "mqtt out",
+    "z": "b608cad9aecc6bc4",
+    "name": "",
+    "topic": "cpe447-happywheel-7f3a/parking/summary",
+    "qos": "0",
+    "retain": "",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "832b8e8152e04531",
+    "x": 830,
+    "y": 780,
+    "wires": []
+  },
+  {
+    "id": "0da1c715b7e35386",
+    "type": "debug",
+    "z": "b608cad9aecc6bc4",
+    "name": "debug 2",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 700,
+    "y": 860,
+    "wires": []
+  },
+  {
+    "id": "uitab",
+    "type": "ui_tab",
+    "name": "Smart Parking",
+    "icon": "dashboard",
+    "order": 1
+  },
+  {
+    "id": "832b8e8152e04531",
+    "type": "mqtt-broker",
+    "name": "hivr",
+    "broker": "broker.hivemq.com",
+    "port": 1883,
+    "clientid": "",
+    "autoConnect": true,
+    "usetls": false,
+    "protocolVersion": 4,
+    "keepalive": 60,
+    "cleansession": true,
+    "autoUnsubscribe": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthRetain": "false",
+    "birthPayload": "",
+    "birthMsg": {},
+    "closeTopic": "",
+    "closeQos": "0",
+    "closeRetain": "false",
+    "closePayload": "",
+    "closeMsg": {},
+    "willTopic": "",
+    "willQos": "0",
+    "willRetain": "false",
+    "willPayload": "",
+    "willMsg": {},
+    "userProps": "",
+    "sessionExpiry": ""
+  },
+  {
+    "id": "uigrp",
+    "type": "ui_group",
+    "name": "ลานจอด 2A",
+    "tab": "uitab",
+    "order": 1,
+    "disp": true,
+    "width": "8",
+    "collapse": false
+  },
+  {
+    "id": "broker1",
+    "type": "mqtt-broker",
+    "name": "Mosquitto",
+    "broker": "127.0.0.1",
+    "port": "1883",
+    "clientid": "",
+    "autoConnect": true,
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "autoUnsubscribe": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "birthMsg": {},
+    "closeTopic": "",
+    "closePayload": "",
+    "closeMsg": {},
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": "",
+    "willMsg": {},
+    "userProps": "",
+    "sessionExpiry": ""
+  }
+]

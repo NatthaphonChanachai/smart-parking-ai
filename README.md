@@ -140,9 +140,10 @@ smart-parking-ai/
 
 | รหัสนักศึกษา | ชื่อ–นามสกุล | Section | หน้าที่ |
 |---|---|---|---|
-| _xxxxxxxxxx_ | _ชื่อ นามสกุล_ | _x_ | _เช่น เก็บ dataset, train โมเดลใน CiRA CORE_ |
-| _xxxxxxxxxx_ | _ชื่อ นามสกุล_ | _x_ | _เช่น Node-RED logic + Dashboard_ |
-| _xxxxxxxxxx_ | _ชื่อ นามสกุล_ | _x_ | _เช่น ESP32 + Wokwi, โมเดลลานจอดจำลอง_ |
+| _xxxxxxxxxx_ | _ชื่อ นามสกุล_ | _x_ | **AI & Dataset** — เก็บและ label ภาพ, train Deep Detect, สร้าง scene ใน CiRA CORE |
+| _xxxxxxxxxx_ | _ชื่อ นามสกุล_ | _x_ | **Backend** — Mosquitto, Node-RED: ROI, Slot Logic, debounce, watchdog, State API |
+| _xxxxxxxxxx_ | _ชื่อ นามสกุล_ | _x_ | **Frontend & Docs** — Web Dashboard, System Diagram, สไลด์และวิดีโอนำเสนอ |
+| _xxxxxxxxxx_ | _ชื่อ นามสกุล_ | _x_ | **Hardware** — ESP32 + Wokwi, โมเดลลานจอดจำลอง, เว็บแคมกล้องที่ 4, GitHub |
 
 ---
 

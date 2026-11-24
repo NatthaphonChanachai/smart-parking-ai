@@ -13,6 +13,14 @@ CPE447 Machine Vision System · Final Project · ทีม **Happy Wheel**
 
 ---
 
+## 🔗 ลิงก์ผลงาน
+
+| | |
+|---|---|
+| 🗺️ System Diagram | [docs/images/system-diagram.png](docs/images/system-diagram.png) |
+| 🎤 เอกสารนำเสนอ (Canva) | _[ลิงก์ Canva]_ |
+| 🎬 วิดีโอนำเสนอ 3 นาที | _[ลิงก์วิดีโอ]_ |
+
 ## ✨ ภาพรวม
 
 อาคารจอดรถส่วนใหญ่ใช้เซนเซอร์ติดทีละช่อง ซึ่งแพงและติดตั้งยาก โปรเจคนี้ใช้ **กล้อง 1 ตัวดูได้หลายช่อง**

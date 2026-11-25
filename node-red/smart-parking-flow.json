@@ -547,11 +547,61 @@
     "wires": []
   },
   {
-    "id": "uitab",
-    "type": "ui_tab",
-    "name": "Smart Parking",
-    "icon": "dashboard",
-    "order": 1
+    "id": "cloudstate_inj",
+    "type": "inject",
+    "z": "b608cad9aecc6bc4",
+    "name": "ทุก 1 วินาที → cloud",
+    "props": [],
+    "repeat": "1",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "2",
+    "topic": "",
+    "x": 170,
+    "y": 760,
+    "wires": [
+      [
+        "cloudstate_fn"
+      ]
+    ]
+  },
+  {
+    "id": "cloudstate_fn",
+    "type": "function",
+    "z": "b608cad9aecc6bc4",
+    "name": "State → Cloud (Vercel dashboard)",
+    "func": "// ส่งข้อมูลชุดเดียวกับ /api/state ขึ้น HiveMQ ให้หน้า dashboard บน Vercel\n// ข้อมูลทั้งหมดสำหรับหน้า /parking\nconst CAMS = flow.get(\"CAMS\") || {};\nconst LABEL = flow.get(\"LABEL\") || {};\nconst seen = flow.get(\"lastSeen\") || {}, off = flow.get(\"offline\") || {};\nconst cstat = flow.get(\"camStats\") || {};\nconst S = flow.get(\"slotState\") || {};\nconst now = Date.now();\nconst cams = {};\nlet rec = null;\nfor (const c in CAMS) {\n  const online = !!seen[c] && !off[c];\n  const cs = cstat[c] || {};\n  const free = CAMS[c].filter(s => S[s.id] && S[s.id].status === \"free\");\n  cams[c] = {\n    label: LABEL[c] || c,\n    slots: CAMS[c].map(s => ({id: s.id, type: s.type, x1: s.x1, x2: s.x2, y1: s.y1, y2: s.y2})),\n    online: online,\n    // ช่องแบบ 2 มิติ (มี y1) -> บอกจำนวนคอลัมน์ให้ dashboard จัดเป็นตาราง\n    cols: CAMS[c][0].y1 !== undefined ? new Set(CAMS[c].map(s => s.x1)).size : 0,\n    age: seen[c] ? now - seen[c] : null,\n    fps: online && cs.fps ? +cs.fps.toFixed(1) : 0,\n    conf: cs.conf != null ? +cs.conf.toFixed(2) : null,\n    ar: cs.ar || 16 / 9,\n    boxes: online ? (cs.boxes || []) : []\n  };\n  // แนะนำ: ชั้นที่ออนไลน์และว่างมากที่สุด -> ช่องธรรมดาช่องแรกที่ว่าง\n  const normal = free.filter(s => s.type !== \"pwd\");\n  if (online && normal.length && (!rec || normal.length > rec.free))\n    rec = {cam: c, label: cams[c].label, slot: normal[0].id, free: normal.length};\n}\nconst st = flow.get(\"stats\") || {};\nconst stays = st.stays || [];\nmsg.payload = {\n  now: now, cams: cams, slots: S, rec: rec,\n  events: (flow.get(\"events\") || []).slice(0, 12), history: (flow.get(\"history\") || []).slice(-90),\n  stats: {entries: st.entries || 0, exits: st.exits || 0, peak: st.peak || 0, peakT: st.peakT || null,\n          avgStay: stays.length ? Math.round(stays.reduce((a, b) => a + b, 0) / stays.length) : null}\n};\nmsg.topic = \"cpe447-happywheel-7f3a/parking/state\";\nmsg.retain = true;\nreturn msg;\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 420,
+    "y": 760,
+    "wires": [
+      [
+        "cloudstate_out"
+      ]
+    ]
+  },
+  {
+    "id": "cloudstate_out",
+    "type": "mqtt out",
+    "z": "b608cad9aecc6bc4",
+    "name": "HiveMQ: parking/state",
+    "topic": "",
+    "qos": "0",
+    "retain": "",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "832b8e8152e04531",
+    "x": 690,
+    "y": 760,
+    "wires": []
   },
   {
     "id": "uigrp",
@@ -562,6 +612,33 @@
     "disp": true,
     "width": "8",
     "collapse": false
+  },
+  {
+    "id": "broker1",
+    "type": "mqtt-broker",
+    "name": "Mosquitto",
+    "broker": "127.0.0.1",
+    "port": "1883",
+    "clientid": "",
+    "autoConnect": true,
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "autoUnsubscribe": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "birthMsg": {},
+    "closeTopic": "",
+    "closePayload": "",
+    "closeMsg": {},
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": "",
+    "willMsg": {},
+    "userProps": "",
+    "sessionExpiry": ""
   },
   {
     "id": "832b8e8152e04531",
@@ -595,30 +672,10 @@
     "sessionExpiry": ""
   },
   {
-    "id": "broker1",
-    "type": "mqtt-broker",
-    "name": "Mosquitto",
-    "broker": "127.0.0.1",
-    "port": "1883",
-    "clientid": "",
-    "autoConnect": true,
-    "usetls": false,
-    "protocolVersion": "4",
-    "keepalive": "60",
-    "cleansession": true,
-    "autoUnsubscribe": true,
-    "birthTopic": "",
-    "birthQos": "0",
-    "birthPayload": "",
-    "birthMsg": {},
-    "closeTopic": "",
-    "closePayload": "",
-    "closeMsg": {},
-    "willTopic": "",
-    "willQos": "0",
-    "willPayload": "",
-    "willMsg": {},
-    "userProps": "",
-    "sessionExpiry": ""
+    "id": "uitab",
+    "type": "ui_tab",
+    "name": "Smart Parking",
+    "icon": "dashboard",
+    "order": 1
   }
 ]

@@ -1,4 +1,8 @@
 {
+  "framework": null,
+  "buildCommand": "",
+  "installCommand": "",
+  "outputDirectory": "web",
   "cleanUrls": true,
   "headers": [{"source": "/(.*)", "headers": [{"key": "Cache-Control", "value": "no-cache"}]}]
 }

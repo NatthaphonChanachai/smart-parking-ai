@@ -55,7 +55,7 @@ bool haveData = false;
 int lastTotalFree = -1;
 
 int totalFree()  { int s = 0; for (int i = 0; i < nFloors; i++) if (floors[i].free > 0) s += floors[i].free; return s; }
-int totalSlots() { int s = 0; for (int i = 0; i < nFloors; i++) s += floors[i].total; return s; }
+int totalSlots() { int s = 0; for (int i = 0; i < nFloors; i++) if (floors[i].free >= 0) s += floors[i].total; return s; }  // skip offline floors
 int onlineFloors() { int s = 0; for (int i = 0; i < nFloors; i++) if (floors[i].free >= 0) s++; return s; }
 int bestFloor() {  // most free spots among online floors, -1 if none
   int b = -1;

@@ -56,6 +56,10 @@ CPE447 Machine Vision System · Final Project · ทีม **Happy Wheel**
 - `smart-parking-flow.npj` — 1 scene ต่อ 1 กล้อง: `Button Run → VideoFile/Camera → Deep Detect → MQTT Pub (+ Debug)`
 - `train.npj` — flow สำหรับ train โมเดล
 - MQTT Pub → `127.0.0.1:1883` topic `parking/raw/<camera-id>`
+- `overlay_slots.py` — โค้ดสำหรับกล่อง **PythonScript** วาดผังช่องจอดทับบนวิดีโอใน CiRA (เขียว = ว่าง, แดง = ไม่ว่าง, กรอบส้ม = ช่องที่แนะนำ, แถบบน = ชั้น · ว่าง x/y · FPS)
+  ต่อแยกสายจาก DeepDetect: `DeepDetect → MqttPub` (เดิม) และ `DeepDetect → PythonScript` แล้วแก้ `CAM = "2A-C0x"` ให้ตรงกับแต่ละ scene
+
+  ![CiRA overlay](docs/images/cira-overlay-preview.png)
 
 > ⚠️ ไฟล์วิดีโอ, dataset และไฟล์โมเดลที่ train แล้วไม่ได้อยู่ใน repo เพราะขนาดใหญ่ ต้องแก้ path ในไฟล์ `.npj` ให้ตรงกับเครื่องที่ใช้
 

@@ -57,7 +57,7 @@ CPE447 Machine Vision System · Final Project · ทีม **Happy Wheel**
 - `train.npj` — flow สำหรับ train โมเดล
 - MQTT Pub → `127.0.0.1:1883` topic `parking/raw/<camera-id>`
 - `smart-parking-flow-overlay.npj` — flow เดียวกัน + กล่อง **PythonScript** ทุก scene: `DeepDetect → PythonScript → Debug` (สาย `DeepDetect → MqttPub` เหมือนเดิม)
-- `overlay_slots.py` — โค้ดในกล่อง PythonScript วาดผังช่องจอด (ROI ชุดเดียวกับ Node-RED) ทับวิดีโอ: เขียว = ว่าง, แดง = ไม่ว่าง, เทา = ไม่แน่ใจ, กรอบส้ม + `GO >` = ช่องที่แนะนำ, แถบบน = ชั้น · ว่าง x/y
+- `overlay_slots.py` — โค้ดในกล่อง PythonScript วาดผังช่องจอด (ROI ชุดเดียวกับ Node-RED) ทับวิดีโอ: เขียว = ว่าง, แดง = ไม่ว่าง, เทา = ไม่แน่ใจ, น้ำเงิน = ช่องคนพิการว่าง (ไม่แนะนำให้คนทั่วไป), กรอบส้ม + `GO >` = ช่องที่แนะนำ (เฉพาะช่องธรรมดา), แถบบน = ชั้น · ว่าง x/y · PWD x/y
   > CiRA CORE 1.9.4: เปิดไฟล์ด้วยการเปิดโปรแกรมใหม่ (อย่าใช้ Open Project ซ้ำในหน้าต่างเดิม → segfault) และห้ามเขียนค่ากลับเข้า `payload` จากกล่องนี้
 
   ![CiRA overlay](docs/images/cira-overlay-live.jpg)
@@ -77,7 +77,7 @@ CPE447 Machine Vision System · Final Project · ทีม **Happy Wheel**
 | **State Store** | เก็บสถานะทุกช่อง, เหตุการณ์, ประวัติ, สถิติรายวัน |
 | **State API** | `GET /api/state` → JSON สำหรับ Dashboard (+ ช่องที่แนะนำ, สุขภาพกล้อง, กล่องตรวจจับ) |
 | **Dashboard** | `GET /parking` → หน้าเว็บ |
-| **Summary** | ทุก 2 s ส่ง `Floor 1,1,3;Floor 2,1,2;…` ไปยัง ESP32 |
+| **Summary** | ทุก 2 s ส่ง `Floor 1,1,2;Floor 2,0,1;…` (นับเฉพาะช่องธรรมดา ไม่รวมช่องคนพิการ) ไปยัง ESP32 |
 
 ### ⑤ Web Dashboard — `http://localhost:1880/parking`
 - ป้ายไฟ LED จำนวนช่องว่าง (กะพริบ **FULL** เมื่อเต็ม)

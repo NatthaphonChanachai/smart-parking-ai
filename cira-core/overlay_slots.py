@@ -2,6 +2,7 @@
 #  Smart Parking AI - Slot Overlay for CiRA CORE (PythonScript node)
 #  Draws the parking-slot grid (same ROI as Node-RED "Init ROI") on top
 #  of the video: green = free, red = occupied, grey = no detection,
+#  blue = free accessible (PWD) slot - never recommended to general drivers,
 #  plus slot IDs, the recommended slot, and a header with FREE x/y.
 #
 #  Wiring (each scene):  DeepDetect ──► MqttPub        (unchanged)
@@ -35,6 +36,7 @@ OCC_NAMES = ("occupied", "car")
 FREE_NAMES = ("empty", "avalible", "available", "free")
 
 GREEN, RED, GREY = (90, 211, 34), (94, 77, 255), (150, 150, 150)   # BGR
+BLUE = (235, 140, 40)   # free accessible (PWD) slot - shown, never recommended
 ORANGE, WHITE, DARK = (59, 173, 255), (255, 255, 255), (24, 18, 10)
 
 # ---- state kept between frames ---------------------------------------
@@ -107,9 +109,14 @@ try:
         raw = slot_status(slots, objs, W0, H0)
         shown = {sid: smooth(sid, raw[sid][0]) for sid, *_ in slots}
 
-        # recommended slot = first free normal slot, else first free
-        rec = next((s[0] for s in slots if shown[s[0]] == "free" and s[5] == "normal"), None) \
-            or next((s[0] for s in slots if shown[s[0]] == "free"), None)
+        # recommended slot = first free NORMAL slot only (accessible/PWD slots are never recommended)
+        rec = next((s[0] for s in slots if shown[s[0]] == "free" and s[5] == "normal"), None)
+        typ_of = {s[0]: s[5] for s in slots}
+
+        def colour(sid, st):
+            if st == "free":
+                return BLUE if typ_of[sid] == "pwd" else GREEN
+            return RED if st == "occupied" else GREY
         pulse = 0.5 + 0.5 * abs(((now * 1.5) % 2) - 1)        # 0.5..1 blink
 
         # translucent fills
@@ -117,8 +124,7 @@ try:
         for sid, x1, x2, y1, y2, _ in slots:
             p1 = (int(x1 * W) + 3, max(int((y1 or 0.0) * H), bar_h) + 3)
             p2 = (int(x2 * W) - 3, int((y2 if y2 is not None else 1.0) * H) - 3)
-            col = {"free": GREEN, "occupied": RED}.get(shown[sid], GREY)
-            cv2.rectangle(layer, p1, p2, col, -1)
+            cv2.rectangle(layer, p1, p2, colour(sid, shown[sid]), -1)
         a = 0.22 if slots[0][3] is not None else 0.14     # lighter tint for full-height slots
         cv2.addWeighted(layer, a, img, 1 - a, 0, img)
 
@@ -127,25 +133,30 @@ try:
             p1 = (int(x1 * W) + 3, max(int((y1 or 0.0) * H), bar_h) + 3)
             p2 = (int(x2 * W) - 3, int((y2 if y2 is not None else 1.0) * H) - 3)
             st = shown[sid]
-            col = {"free": GREEN, "occupied": RED}.get(st, GREY)
+            col = colour(sid, st)
             if sid == rec:
                 cv2.rectangle(img, p1, p2, ORANGE, th * 3)
                 g = int(255 * pulse)
                 label(img, "GO >", (p2[0] - int(80 * k), p1[1] + int(28 * k)), 0.6 * k, DARK, (59, g // 2 + 60, g), th)
             else:
                 cv2.rectangle(img, p1, p2, col, th)
-            tag = sid + (" PWD" if typ == "pwd" else "")
+            tag = sid + (" PWD ONLY" if typ == "pwd" else "")
             label(img, tag, (p1[0] + 4, p1[1] + int(28 * k)), 0.65 * k, WHITE, col, th)
             if st != "unknown":
                 cv2.putText(img, "%d%%" % round(raw[sid][1] * 100), (p1[0] + 8, p2[1] - int(8 * k)),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5 * k, WHITE, max(1, th - 1), cv2.LINE_AA)
 
         # header bar
-        free_n = sum(1 for v in shown.values() if v == "free")
-        total = len(slots)
+        # count normal slots only; accessible slots are reported separately
+        free_n = sum(1 for sid, v in shown.items() if v == "free" and typ_of[sid] == "normal")
+        total = sum(1 for t in typ_of.values() if t == "normal")
+        pwd_total = len(slots) - total
+        pwd_free = sum(1 for sid, v in shown.items() if v == "free" and typ_of[sid] == "pwd")
         cv2.rectangle(img, (0, 0), (W, bar_h), DARK, -1)
         cv2.rectangle(img, (0, bar_h - th), (int(W * free_n / total), bar_h), GREEN, -1)
         txt = "%s   FREE %d/%d" % (FLOOR.get(CAM, CAM), free_n, total)
+        if pwd_total:
+            txt += "   PWD %d/%d" % (pwd_free, pwd_total)
         cv2.putText(img, txt, (int(14 * k), int(32 * k)), cv2.FONT_HERSHEY_DUPLEX, 0.9 * k,
                     GREEN if free_n else RED, th, cv2.LINE_AA)
         if free_n == 0:

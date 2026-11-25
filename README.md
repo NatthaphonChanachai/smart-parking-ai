@@ -25,13 +25,13 @@ CPE447 Machine Vision System · Final Project · ทีม **Happy Wheel**
 ## ✨ ภาพรวม
 
 อาคารจอดรถส่วนใหญ่ใช้เซนเซอร์ติดทีละช่อง ซึ่งแพงและติดตั้งยาก โปรเจคนี้ใช้ **กล้อง 1 ตัวดูได้หลายช่อง**
-โมเดล Object Detection ที่เรา train เองใน **CiRA CORE** แยกแต่ละช่องเป็น `Occupied` / `Avalible`
+โมเดล Object Detection ที่เรา train เองใน **CiRA CORE** แยกแต่ละช่องเป็น `occupied` / `empty`
 จากนั้น Node-RED จะจับกล่องที่ตรวจเจอเข้ากับผังช่องจอด (ROI) กรองสัญญาณรบกวน แล้วส่งสถานะไปแสดงผลบน Dashboard และป้ายไฟหน้าลานจอด
 
 | | |
 |---|---|
 | 📷 **4 กล้อง / 20 ช่อง** | วิดีโอลานจอดจริง 3 กล้อง + เว็บแคมจับโมเดลลานจอดจำลอง 1 กล้อง |
-| 🧠 **Edge AI** | Deep Detect ใน CiRA CORE (2 คลาส: Occupied / Avalible) |
+| 🧠 **Edge AI** | Deep Detect ใน CiRA CORE (2 คลาส: occupied / empty) |
 | ⚡ **เรียลไทม์** | อัปเดต Dashboard ทุก 1 วินาที, ป้าย LCD ทุก 2 วินาที |
 | 🛡️ **ทนทาน** | debounce 5 วินาที, watchdog กล้องหลุด → "ไม่ทราบ" แทนการเดา |
 | 🧭 **นำทาง** | แนะนำชั้นและช่องที่ควรไปจอด ทั้งบนเว็บและป้าย ESP32 |
@@ -61,7 +61,7 @@ CPE447 Machine Vision System · Final Project · ทีม **Happy Wheel**
 
 ### ③ MQTT Broker
 - **Mosquitto** `localhost:1883` — ข้อมูลภายในระบบ (`parking/raw/+`, `parking/2A/slot/+` แบบ retained)
-- **HiveMQ public** — ส่งสรุปไปยัง ESP32 (`cpe447-happywheel-7f3a/parking/summary`)
+- **HiveMQ public** — ส่งสรุปไปยัง ESP32 (`cpe447-happywheel-7f3a/parking/summary`) และสถานะทั้งระบบไปยังหน้าเว็บบน Vercel (`cpe447-happywheel-7f3a/parking/state`, retained, ทุก 1 s, ผ่าน `wss://broker.hivemq.com:8884/mqtt`)
 
 ### ④ Node-RED — [`node-red/smart-parking-flow.json`](node-red/smart-parking-flow.json)
 | Node | หน้าที่ |

@@ -38,7 +38,7 @@
   <g transform="translate(1290,38)">
     <rect width="270" height="40" rx="20" fill="#22d39a22" stroke="#22d39a66"/>
     <circle cx="22" cy="20" r="6" fill="#22d39a"/>
-    <text x="38" y="26" font-size="14" font-weight="700" fill="#22d39a">4 cameras · 20 slots · 1 s refresh</text>
+    <text x="38" y="26" font-size="14" font-weight="700" fill="#22d39a">4 cams · 20 slots · live on Vercel</text>
   </g>
 
   <!-- ===== column headers ===== -->
@@ -106,8 +106,8 @@
     <text x="16" y="28" font-size="17" font-weight="800" fill="#ff8bf5">Deep Detect</text>
     <text x="16" y="48" class="s">Object Detection (Deep Learning)</text>
     <text x="16" y="66" class="s">train ด้วยภาพลานจอดของเราเอง</text>
-    <rect x="16" y="80" width="112" height="26" rx="13" fill="#ff4bf033" stroke="#ff4bf0"/><text x="72" y="98" text-anchor="middle" class="chip" fill="#ff8bf5">Occupied</text>
-    <rect x="138" y="80" width="112" height="26" rx="13" fill="#9dff3a26" stroke="#9dff3a"/><text x="194" y="98" text-anchor="middle" class="chip" fill="#c4ff7d">Avalible</text>
+    <rect x="16" y="80" width="112" height="26" rx="13" fill="#ff4bf033" stroke="#ff4bf0"/><text x="72" y="98" text-anchor="middle" class="chip" fill="#ff8bf5">occupied</text>
+    <rect x="138" y="80" width="112" height="26" rx="13" fill="#9dff3a26" stroke="#9dff3a"/><text x="194" y="98" text-anchor="middle" class="chip" fill="#c4ff7d">empty</text>
     <text x="16" y="132" class="s mono">→ x, y, w, h, confidence</text>
   </g>
   <path d="M500 454v22" class="flow" marker-end="url(#arr)"/>
@@ -120,10 +120,10 @@
   <g transform="translate(365,552)">
     <rect width="270" height="112" rx="12" fill="#000"/>
     <rect x="10" y="10" width="250" height="92" rx="6" fill="#2c3038"/>
-    <rect x="22" y="44" width="62" height="48" fill="none" stroke="#9dff3a" stroke-width="2.5"/><rect x="22" y="33" width="62" height="12" fill="#9dff3a"/><text x="25" y="43" font-size="9" font-weight="800" class="mono">Avalible 90%</text>
-    <rect x="98" y="30" width="72" height="62" fill="none" stroke="#ff4bf0" stroke-width="2.5"/><rect x="98" y="19" width="72" height="12" fill="#ff4bf0"/><text x="101" y="29" font-size="9" font-weight="800" class="mono">Occupied 98%</text>
+    <rect x="22" y="44" width="62" height="48" fill="none" stroke="#9dff3a" stroke-width="2.5"/><rect x="22" y="33" width="62" height="12" fill="#9dff3a"/><text x="25" y="43" font-size="9" font-weight="800" class="mono">empty 90%</text>
+    <rect x="98" y="30" width="72" height="62" fill="none" stroke="#ff4bf0" stroke-width="2.5"/><rect x="98" y="19" width="72" height="12" fill="#ff4bf0"/><text x="101" y="29" font-size="9" font-weight="800" class="mono">occupied 98%</text>
     <rect x="112" y="48" width="44" height="36" rx="10" fill="#d9dde5"/>
-    <rect x="182" y="30" width="68" height="62" fill="none" stroke="#ff4bf0" stroke-width="2.5"/><rect x="182" y="19" width="68" height="12" fill="#ff4bf0"/><text x="185" y="29" font-size="9" font-weight="800" class="mono">Occupied 99%</text>
+    <rect x="182" y="30" width="68" height="62" fill="none" stroke="#ff4bf0" stroke-width="2.5"/><rect x="182" y="19" width="68" height="12" fill="#ff4bf0"/><text x="185" y="29" font-size="9" font-weight="800" class="mono">occupied 99%</text>
     <rect x="194" y="48" width="44" height="36" rx="10" fill="#6c7380"/>
   </g>
 
@@ -165,7 +165,7 @@
     <g transform="translate(955,354)"><rect width="280" height="52" rx="10" fill="#2a1f0a" stroke="#ffc93c"/><text x="14" y="22" class="b" fill="#ffc93c">Watchdog</text><text x="14" y="40" class="s">กล้องเงียบ &gt; 10 s → ช่องเป็น "ไม่ทราบ"</text></g>
     <g transform="translate(955,414)"><rect width="280" height="70" rx="10" fill="#0a1222" stroke="#2b3d63"/><text x="14" y="22" class="b">State Store</text><text x="14" y="40" class="s">สถานะทุกช่อง · เหตุการณ์ · ประวัติ</text><text x="14" y="58" class="s">สถิติรายวัน (เข้า/ออก/เวลาจอด/พีค)</text></g>
     <g transform="translate(955,492)"><rect width="136" height="70" rx="10" fill="#0a1222" stroke="#4c8dff"/><text x="12" y="22" class="b" fill="#8fb4ff">State API</text><text x="12" y="42" class="s mono">/api/state</text><text x="12" y="58" class="s">แนะนำช่อง</text></g>
-    <g transform="translate(1099,492)"><rect width="136" height="70" rx="10" fill="#0a1222" stroke="#ffad3b"/><text x="12" y="22" class="b" fill="#ffad3b">Summary</text><text x="12" y="42" class="s">ทุก 2 วินาที</text><text x="12" y="58" class="s mono">free/total ต่อชั้น</text></g>
+    <g transform="translate(1099,492)"><rect width="136" height="70" rx="10" fill="#0a1222" stroke="#ffad3b"/><text x="12" y="22" class="b" fill="#ffad3b">Cloud Pub</text><text x="12" y="42" class="s">summary ทุก 2 s</text><text x="12" y="58" class="s">state ทุก 1 s</text></g>
     <g transform="translate(955,570)"><rect width="280" height="94" rx="10" fill="#0a1222" stroke="#2b3d63"/><text x="14" y="22" class="b">HTTP · /parking</text><text x="14" y="42" class="s">หน้า Dashboard (HTML/CSS/JS)</text><text x="14" y="60" class="s">ดึงข้อมูลจาก /api/state ทุก 1 s</text><text x="14" y="80" class="s">ไม่ต้องลงโปรแกรมเพิ่ม เปิดผ่านเบราว์เซอร์</text></g>
   </g>
   <!-- internal flow arrows -->
@@ -181,7 +181,7 @@
   <g filter="url(#sh)"><rect x="1290" y="142" width="270" height="250" rx="18" fill="url(#card)" stroke="#1f2e4d"/></g>
   <g transform="translate(1308,160)">
     <text x="0" y="18" class="h" font-size="17">Web Dashboard</text>
-    <text x="0" y="37" class="s mono">localhost:1880/parking</text>
+    <text x="0" y="37" class="s mono">localhost:1880 + ☁ Vercel</text>
     <rect x="0" y="50" width="234" height="172" rx="10" fill="#070d1a" stroke="#2b3d63"/>
     <rect x="10" y="60" width="112" height="42" rx="6" fill="#000" stroke="#333"/>
     <text x="66" y="90" text-anchor="middle" font-size="26" font-weight="800" fill="#ffad3b" class="mono">02</text>
@@ -200,8 +200,8 @@
   <g transform="translate(1308,438)">
     <path d="M14 44a14 14 0 0 1 2-28 18 18 0 0 1 34-2 13 13 0 0 1 4 30z" fill="#ffc93c22" stroke="#ffc93c" stroke-width="2"/>
     <text x="70" y="22" class="b">HiveMQ public broker</text>
-    <text x="70" y="40" class="s">ส่งข้อมูลไปยังอุปกรณ์นอกเครื่อง</text>
-    <text x="70" y="58" class="s mono" font-size="11">…/parking/summary</text>
+    <text x="70" y="40" class="s mono" font-size="11">…/summary → ESP32</text>
+    <text x="70" y="58" class="s mono" font-size="11">…/state → Vercel (wss)</text>
   </g>
   <!-- esp32 -->
   <g filter="url(#sh)"><rect x="1290" y="540" width="270" height="290" rx="18" fill="url(#card)" stroke="#1f2e4d"/></g>
@@ -230,6 +230,8 @@
   <text x="1262" y="410" class="s" font-size="11" transform="rotate(-90 1262 410)">HTTP · JSON</text>
   <path d="M1237 527 C1262 527 1262 466 1287 466" class="flow" stroke="#ffc93c" marker-end="url(#arrO)"/>
   <path d="M1425 512 v25" class="flow" stroke="#ffc93c" marker-end="url(#arrO)"/>
+  <path d="M1500 420 v-25" class="flow" stroke="#ffc93c" marker-end="url(#arrO)"/>
+  <text x="1508" y="412" class="s" font-size="11" fill="#ffc93c">wss</text>
 
   <!-- ===== bottom: data contracts ===== -->
   <g filter="url(#sh)"><rect x="40" y="712" width="1215" height="230" rx="18" fill="url(#card)" stroke="#1f2e4d"/></g>
@@ -239,7 +241,7 @@
     <text x="14" y="24" class="b" font-size="13" fill="#ff8bf5">1 · CiRA → parking/raw/2A-C02</text>
     <g class="mono" font-size="12" fill="#b9c6e4">
       <text x="14" y="50">{"DeepDetect":{"im_w":1920,"im_h":1080,</text>
-      <text x="14" y="68"> "objects":[{"name":"Occupied",</text>
+      <text x="14" y="68"> "objects":[{"name":"occupied",</text>
       <text x="14" y="86">   "x":1450,"y":700,"w":540,"h":620,</text>
       <text x="14" y="104">   "confidence":0.98}, …]}}</text>
     </g>

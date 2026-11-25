@@ -17,6 +17,7 @@ CPE447 Machine Vision System · Final Project · ทีม **Happy Wheel**
 
 | | |
 |---|---|
+| 🌐 Live Dashboard (Vercel) | https://smart-parking-ai-eight.vercel.app |
 | 🗺️ System Diagram | [docs/images/system-diagram.png](docs/images/system-diagram.png) |
 | 🎤 เอกสารนำเสนอ (Canva) | _[ลิงก์ Canva]_ |
 | 🎬 วิดีโอนำเสนอ 3 นาที | _[ลิงก์วิดีโอ]_ |

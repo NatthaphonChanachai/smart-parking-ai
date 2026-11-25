@@ -110,6 +110,7 @@ CPE447 Machine Vision System · Final Project · ทีม **Happy Wheel**
    (ต้องติดตั้ง `node-red-dashboard` ด้วย ถ้าจะใช้หน้า `/ui`)
 3. **CiRA CORE** — เปิด `cira-core/smart-parking-flow.npj` แก้ path วิดีโอ/โมเดล แล้วกด Run ทุก scene
 4. **Dashboard** — เปิด `http://localhost:1880/parking`
+   หรือเปิดเวอร์ชันออนไลน์ https://smart-parking-ai-eight.vercel.app (ต้องรัน Node-RED อยู่)
 5. **ESP32** — เปิดโฟลเดอร์ `esp32-sign/` ใน VS Code (PlatformIO + Wokwi) → Build → `Wokwi: Start Simulator`
 
 ### เพิ่มกล้อง / แก้ผังช่องจอด
@@ -128,6 +129,7 @@ CPE447 Machine Vision System · Final Project · ทีม **Happy Wheel**
 smart-parking-ai/
 ├── cira-core/          # CiRA CORE flows (.npj)
 ├── node-red/           # Node-RED flow (Smart Parking tab)
+├── web/               # Dashboard เวอร์ชัน Cloud (Vercel, รับข้อมูลผ่าน HiveMQ wss)
 ├── esp32-sign/         # PlatformIO + Wokwi project (ESP32 floor sign)
 │   ├── src/main.cpp
 │   ├── diagram.json

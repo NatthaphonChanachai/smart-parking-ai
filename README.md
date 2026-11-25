@@ -56,10 +56,11 @@ CPE447 Machine Vision System · Final Project · ทีม **Happy Wheel**
 - `smart-parking-flow.npj` — 1 scene ต่อ 1 กล้อง: `Button Run → VideoFile/Camera → Deep Detect → MQTT Pub (+ Debug)`
 - `train.npj` — flow สำหรับ train โมเดล
 - MQTT Pub → `127.0.0.1:1883` topic `parking/raw/<camera-id>`
-- `overlay_slots.py` — โค้ดสำหรับกล่อง **PythonScript** วาดผังช่องจอดทับบนวิดีโอใน CiRA (เขียว = ว่าง, แดง = ไม่ว่าง, กรอบส้ม = ช่องที่แนะนำ, แถบบน = ชั้น · ว่าง x/y · FPS)
-  ต่อแยกสายจาก DeepDetect: `DeepDetect → MqttPub` (เดิม) และ `DeepDetect → PythonScript` แล้วแก้ `CAM = "2A-C0x"` ให้ตรงกับแต่ละ scene
+- `smart-parking-flow-overlay.npj` — flow เดียวกัน + กล่อง **PythonScript** ทุก scene: `DeepDetect → PythonScript → Debug` (สาย `DeepDetect → MqttPub` เหมือนเดิม)
+- `overlay_slots.py` — โค้ดในกล่อง PythonScript วาดผังช่องจอด (ROI ชุดเดียวกับ Node-RED) ทับวิดีโอ: เขียว = ว่าง, แดง = ไม่ว่าง, เทา = ไม่แน่ใจ, กรอบส้ม + `GO >` = ช่องที่แนะนำ, แถบบน = ชั้น · ว่าง x/y
+  > CiRA CORE 1.9.4: เปิดไฟล์ด้วยการเปิดโปรแกรมใหม่ (อย่าใช้ Open Project ซ้ำในหน้าต่างเดิม → segfault) และห้ามเขียนค่ากลับเข้า `payload` จากกล่องนี้
 
-  ![CiRA overlay](docs/images/cira-overlay-preview.png)
+  ![CiRA overlay](docs/images/cira-overlay-live.jpg)
 
 > ⚠️ ไฟล์วิดีโอ, dataset และไฟล์โมเดลที่ train แล้วไม่ได้อยู่ใน repo เพราะขนาดใหญ่ ต้องแก้ path ในไฟล์ `.npj` ให้ตรงกับเครื่องที่ใช้
 

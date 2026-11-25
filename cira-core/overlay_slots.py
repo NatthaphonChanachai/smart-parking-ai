@@ -2,7 +2,7 @@
 #  Smart Parking AI - Slot Overlay for CiRA CORE (PythonScript node)
 #  Draws the parking-slot grid (same ROI as Node-RED "Init ROI") on top
 #  of the video: green = free, red = occupied, grey = no detection,
-#  plus slot IDs, the recommended slot, and a header with FREE x/y + FPS.
+#  plus slot IDs, the recommended slot, and a header with FREE x/y.
 #
 #  Wiring (each scene):  DeepDetect ──► MqttPub        (unchanged)
 #                                   └─► PythonScript   (this code)
@@ -24,10 +24,11 @@ ROI = {
     "2A-C02": [("04", 0.00, 0.65, None, None, "pwd"), ("05", 0.65, 1.00, None, None, "normal")],
     "2A-C03": [("06", 0.00, 0.33, None, None, "normal"), ("07", 0.33, 0.66, None, None, "normal"),
                ("08", 0.66, 1.00, None, None, "normal")],
-    "2A-C04": [(f"{9 + i:02d}", 0.00, 0.40, y1, y2, "normal") for i, (y1, y2) in enumerate(
-                   [(.13, .25), (.25, .37), (.37, .49), (.49, .62), (.62, .75), (.75, .90)])] +
-              [(f"{15 + i:02d}", 0.60, 1.00, y1, y2, "normal") for i, (y1, y2) in enumerate(
-                   [(.13, .25), (.25, .37), (.37, .49), (.49, .62), (.62, .75), (.75, .90)])],
+    # webcam (landscape): top row 09-14, bottom row 15-20 - same values as Node-RED Init ROI
+    "2A-C04": [("%02d" % (9 + i), x1, x2, 0.00, 0.40, "normal") for i, (x1, x2) in enumerate(
+                   [(.07, .19), (.19, .30), (.30, .40), (.40, .51), (.51, .61), (.61, .75)])] +
+              [("%02d" % (15 + i), x1, x2, 0.60, 1.00, "normal") for i, (x1, x2) in enumerate(
+                   [(.06, .20), (.20, .30), (.30, .42), (.42, .52), (.52, .63), (.63, .78)])],
 }
 FLOOR = {"2A-C01": "FLOOR 1", "2A-C02": "FLOOR 2", "2A-C03": "FLOOR 3", "2A-C04": "FLOOR 4"}
 OCC_NAMES = ("occupied", "car")
@@ -37,11 +38,11 @@ GREEN, RED, GREY = (90, 211, 34), (94, 77, 255), (150, 150, 150)   # BGR
 ORANGE, WHITE, DARK = (59, 173, 255), (255, 255, 255), (24, 18, 10)
 
 # ---- state kept between frames ---------------------------------------
-G = globals()
-if "spk_state" not in G:
-    G["spk_state"] = {}          # slot -> [shown, candidate, count]
-    G["spk_fps"] = 0.0
-    G["spk_t"] = time.time()
+# CiRA runs this script with fresh globals every frame, so keep state on
+# the builtins module (shared by the whole interpreter), one entry per camera.
+import builtins
+G = builtins.__dict__.setdefault("_spk_overlay", {}).setdefault(
+    CAM, {"spk_state": {}, "spk_fps": 0.0, "spk_t": time.time()})
 
 
 def slot_status(slots, objs, W, H):
@@ -100,11 +101,7 @@ try:
         objs = dd.get("objects", []) or []
         W0, H0 = float(dd.get("im_w") or W), float(dd.get("im_h") or H)
 
-        # fps (EMA)
         now = time.time()
-        dt = max(now - G["spk_t"], 1e-3)
-        G["spk_t"] = now
-        G["spk_fps"] = G["spk_fps"] * 0.9 + (1.0 / dt) * 0.1 if G["spk_fps"] else 1.0 / dt
 
         slots = ROI[CAM]
         raw = slot_status(slots, objs, W0, H0)
@@ -153,11 +150,11 @@ try:
                     GREEN if free_n else RED, th, cv2.LINE_AA)
         if free_n == 0:
             label(img, "FULL", (int(W * 0.45), int(36 * k)), 0.9 * k, WHITE, (40, 40, int(200 + 55 * pulse)), th)
-        right = "%s  |  %.0f FPS  |  %s" % (CAM, G["spk_fps"], time.strftime("%H:%M:%S"))
+        right = "%s  |  AI LIVE  |  %s" % (CAM, time.strftime("%H:%M:%S"))
         (tw, _), _ = cv2.getTextSize(right, cv2.FONT_HERSHEY_SIMPLEX, 0.6 * k, th)
         cv2.putText(img, right, (W - tw - int(14 * k), int(30 * k)), cv2.FONT_HERSHEY_SIMPLEX, 0.6 * k,
                     (200, 190, 170), max(1, th - 1), cv2.LINE_AA)
-
-        payload["overlay"] = {"cam": CAM, "free": free_n, "total": total, "rec": rec}
+        # NOTE: don't write back into payload here - adding keys to payload from
+        # this node crashed CiRA CORE 1.9.4 (segfault). Node-RED does the counting.
 except Exception as e:
     print("overlay error:", e)

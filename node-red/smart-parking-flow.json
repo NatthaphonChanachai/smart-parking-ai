@@ -219,7 +219,7 @@
     "type": "function",
     "z": "b608cad9aecc6bc4",
     "name": "Slot Logic",
-    "func": "// DeepDetect -> สถานะช่อง (dedupe + debounce) -> MQTT\nconst CAMS = flow.get(\"CAMS\");\nif (!CAMS || !msg.topic) return null;\nconst cam = msg.topic.split(\"/\")[2];\nconst slots = CAMS[cam];\nif (!slots) return null;\nconst zone = cam.split(\"-\")[0];\n\nconst root = msg.payload && (msg.payload.payload || msg.payload);\nconst dd = root && root.DeepDetect;\nif (!dd) return null;\n\nconst CONF = 0.5;\nconst DEBOUNCE_MS = msg.sim ? 0 : 5000;\nconst W = dd.im_w || 1920;\nconst H = dd.im_h || 1080;\n\nconst seen = flow.get(\"lastSeen\") || {};\nconst off = flow.get(\"offline\") || {};\nconst states = context.get(\"state\") || {};\n\n// กล้องกลับมาออนไลน์ -> เริ่มตัดสินใหม่\nif (off[cam]) {\n  for (const s of slots) delete states[cam + \"-\" + s.id];\n  off[cam] = false;\n  flow.set(\"offline\", off);\n}\nseen[cam] = Date.now();\nflow.set(\"lastSeen\", seen);\n\n// สุขภาพกล้อง: fps, ความมั่นใจเฉลี่ย, กล่องที่ตรวจจับ (ให้ dashboard วาด \"มุมมอง AI\")\nconst H0 = dd.im_h || 1080;\nconst cstat = flow.get(\"camStats\") || {};\nconst cs0 = cstat[cam] || {n: 0};\nconst tnow = Date.now();\nif (cs0.last) { const f = 1000 / Math.max(tnow - cs0.last, 1); cs0.fps = cs0.fps ? cs0.fps * 0.85 + f * 0.15 : f; }\ncs0.last = tnow; cs0.n++;\nconst objs = dd.objects || [];\ncs0.conf = objs.length ? objs.reduce((a, o) => a + o.confidence, 0) / objs.length : null;\ncs0.ar = W / H0;\ncs0.boxes = objs.slice(0, 40).map(o => ({x: +(o.x / W).toFixed(4), y: +(o.y / H0).toFixed(4),\n  w: +((o.w || 0) / W).toFixed(4), h: +((o.h || 0) / H0).toFixed(4), n: o.name, c: +o.confidence.toFixed(2)}));\ncstat[cam] = cs0;\nflow.set(\"camStats\", cstat);\n\nconst out = [];\nfor (const s of slots) {\n  // หลายกล่องในช่องเดียว (โมเดลตรวจซ้ำ) -> เอา confidence สูงสุดของแต่ละ class\n  let occ = 0, avl = 0;\n  for (const o of (dd.objects || [])) {\n    const cx = o.x / W;                 // x = จุดกึ่งกลางกล่อง\n    if (cx < s.x1 || cx >= s.x2) continue;\n    // ช่องที่มี y1/y2 (กล้องมองด้านบน) -> เช็คแกน y ด้วย\n    if (s.y1 !== undefined) {\n      const cy = o.y / H;\n      if (cy < s.y1 || cy >= s.y2) continue;\n    }\n    if (o.name === \"Occupied\") occ = Math.max(occ, o.confidence);\n    else if (o.name === \"Avalible\") avl = Math.max(avl, o.confidence);\n  }\n  let status = null;\n  if (occ >= CONF && occ >= avl) status = \"occupied\";\n  else if (avl >= CONF) status = \"free\";\n  if (!status) continue;               // ไม่มีหลักฐาน -> คงสถานะเดิม\n\n  const key = cam + \"-\" + s.id;\n  const st = states[key] || {cur: null, pend: status, since: Date.now()};\n  if (status !== st.pend) { st.pend = status; st.since = Date.now(); }\n  if (st.pend !== st.cur && Date.now() - st.since >= DEBOUNCE_MS) {\n    st.cur = st.pend;\n    out.push({\n      topic: \"parking/\" + zone + \"/slot/\" + s.id,\n      payload: {status: st.cur, type: s.type, cam: cam,\n                conf: +Math.max(occ, avl).toFixed(2)},\n      retain: true\n    });\n  }\n  states[key] = st;\n}\ncontext.set(\"state\", states);\nreturn out.length ? [out] : null;",
+    "func": "// DeepDetect -> สถานะช่อง (dedupe + debounce) -> MQTT\nconst CAMS = flow.get(\"CAMS\");\nif (!CAMS || !msg.topic) return null;\nconst cam = msg.topic.split(\"/\")[2];\nconst slots = CAMS[cam];\nif (!slots) return null;\nconst zone = cam.split(\"-\")[0];\n\nconst root = msg.payload && (msg.payload.payload || msg.payload);\nconst dd = root && root.DeepDetect;\nif (!dd) return null;\n\nconst CONF = 0.5;\n// ชื่อ class จากโมเดล (รองรับทั้งโมเดลเดิม Occupied/Avalible และโมเดลใหม่ occupied/empty)\nconst OCC_NAMES = [\"occupied\", \"car\"];\nconst FREE_NAMES = [\"avalible\", \"available\", \"empty\", \"free\"];\nconst DEBOUNCE_MS = msg.sim ? 0 : 5000;\nconst W = dd.im_w || 1920;\nconst H = dd.im_h || 1080;\n\nconst seen = flow.get(\"lastSeen\") || {};\nconst off = flow.get(\"offline\") || {};\nconst states = context.get(\"state\") || {};\n\n// กล้องกลับมาออนไลน์ -> เริ่มตัดสินใหม่\nif (off[cam]) {\n  for (const s of slots) delete states[cam + \"-\" + s.id];\n  off[cam] = false;\n  flow.set(\"offline\", off);\n}\nseen[cam] = Date.now();\nflow.set(\"lastSeen\", seen);\n\n// สุขภาพกล้อง: fps, ความมั่นใจเฉลี่ย, กล่องที่ตรวจจับ (ให้ dashboard วาด \"มุมมอง AI\")\nconst H0 = dd.im_h || 1080;\nconst cstat = flow.get(\"camStats\") || {};\nconst cs0 = cstat[cam] || {n: 0};\nconst tnow = Date.now();\nif (cs0.last) { const f = 1000 / Math.max(tnow - cs0.last, 1); cs0.fps = cs0.fps ? cs0.fps * 0.85 + f * 0.15 : f; }\ncs0.last = tnow; cs0.n++;\nconst objs = dd.objects || [];\ncs0.conf = objs.length ? objs.reduce((a, o) => a + o.confidence, 0) / objs.length : null;\ncs0.ar = W / H0;\ncs0.boxes = objs.slice(0, 40).map(o => ({x: +(o.x / W).toFixed(4), y: +(o.y / H0).toFixed(4),\n  w: +((o.w || 0) / W).toFixed(4), h: +((o.h || 0) / H0).toFixed(4), n: OCC_NAMES.includes(String(o.name || \"\").toLowerCase()) ? \"Occupied\" : \"Available\", c: +o.confidence.toFixed(2)}));\ncstat[cam] = cs0;\nflow.set(\"camStats\", cstat);\n\nconst out = [];\nfor (const s of slots) {\n  // หลายกล่องในช่องเดียว (โมเดลตรวจซ้ำ) -> เอา confidence สูงสุดของแต่ละ class\n  let occ = 0, avl = 0;\n  for (const o of (dd.objects || [])) {\n    const cx = o.x / W;                 // x = จุดกึ่งกลางกล่อง\n    if (cx < s.x1 || cx >= s.x2) continue;\n    // ช่องที่มี y1/y2 (กล้องมองด้านบน) -> เช็คแกน y ด้วย\n    if (s.y1 !== undefined) {\n      const cy = o.y / H;\n      if (cy < s.y1 || cy >= s.y2) continue;\n    }\n    const nm = String(o.name || \"\").toLowerCase();\n    if (OCC_NAMES.includes(nm)) occ = Math.max(occ, o.confidence);\n    else if (FREE_NAMES.includes(nm)) avl = Math.max(avl, o.confidence);\n  }\n  let status = null;\n  if (occ >= CONF && occ >= avl) status = \"occupied\";\n  else if (avl >= CONF) status = \"free\";\n  if (!status) continue;               // ไม่มีหลักฐาน -> คงสถานะเดิม\n\n  const key = cam + \"-\" + s.id;\n  const st = states[key] || {cur: null, pend: status, since: Date.now()};\n  if (status !== st.pend) { st.pend = status; st.since = Date.now(); }\n  if (st.pend !== st.cur && Date.now() - st.since >= DEBOUNCE_MS) {\n    st.cur = st.pend;\n    out.push({\n      topic: \"parking/\" + zone + \"/slot/\" + s.id,\n      payload: {status: st.cur, type: s.type, cam: cam,\n                conf: +Math.max(occ, avl).toFixed(2)},\n      retain: true\n    });\n  }\n  states[key] = st;\n}\ncontext.set(\"state\", states);\nreturn out.length ? [out] : null;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -554,6 +554,16 @@
     "order": 1
   },
   {
+    "id": "uigrp",
+    "type": "ui_group",
+    "name": "ลานจอด 2A",
+    "tab": "uitab",
+    "order": 1,
+    "disp": true,
+    "width": "8",
+    "collapse": false
+  },
+  {
     "id": "832b8e8152e04531",
     "type": "mqtt-broker",
     "name": "hivr",
@@ -583,16 +593,6 @@
     "willMsg": {},
     "userProps": "",
     "sessionExpiry": ""
-  },
-  {
-    "id": "uigrp",
-    "type": "ui_group",
-    "name": "ลานจอด 2A",
-    "tab": "uitab",
-    "order": 1,
-    "disp": true,
-    "width": "8",
-    "collapse": false
   },
   {
     "id": "broker1",

@@ -204,11 +204,11 @@ function render(){
  const S=D.slots,cs=Object.entries(D.cams),all=cs.flatMap(([c,v])=>v.slots);
  let f=0,o=0,pf=0,pt=0;const fl=[];
  cs.forEach(([c,v])=>{let cf=0,co=0;v.slots.forEach(s=>{const x=S[s.id],st=x?x.status:'unknown';
-  if(st==='free'){f++;cf++;if(s.type==='pwd')pf++}if(st==='occupied'){o++;co++}if(s.type==='pwd')pt++;
+  const pw=s.type==='pwd';if(st==='free'){if(pw)pf++;else{f++;cf++}}if(st==='occupied'){o++;if(!pw)co++}if(pw)pt++;
   const el=$('#s-'+s.id);el.className='slot '+st+(D.rec&&D.rec.slot===s.id?' best':'');el.querySelector('.dur').textContent=x&&st!=='unknown'?dur(D.now-x.ts):'';
   el.title=`ช่อง ${s.id} · ${TH[st]}`+(x&&x.conf!=null?` · ความมั่นใจ ${Math.round(x.conf*100)}%`:'')+(x?` · ตั้งแต่ ${new Date(x.ts).toLocaleTimeString('th-TH')}`:'');
   if(prev&&prev[s.id]&&prev[s.id].status!==st){el.classList.add('ping');setTimeout(()=>el.classList.remove('ping'),900)}});
-  const n=v.slots.length,known=cf+co;
+  const n=v.slots.filter(s=>s.type!=='pwd').length,known=cf+co;   // ช่องธรรมดาเท่านั้น (ช่องคนพิการแสดงแยก)
   fl.push({c,label:v.label,free:v.online&&known?cf:-1,occ:co,total:n,unk:n-known,online:v.online});
   $('#c-'+c).innerHTML=`<span class="chip" style="color:${v.online?'var(--grn)':'var(--yel)'}">● ${v.online?'ออนไลน์':'ออฟไลน์'}</span><span class="chip">ว่าง ${cf}/${n}</span><span class="chip">${v.fps} fps</span><span class="chip">AI ${v.conf!=null?Math.round(v.conf*100)+'%':'-'}</span><span class="chip">ล่าสุด ${ago(v.age)}</span>`;
   aiView(c,v,S);
@@ -216,7 +216,7 @@ function render(){
  const n=all.length,pct=n?Math.round(o/n*100):0;
  if(lastFree!==null&&lastFree!==f){$('#free').classList.remove('flip');void $('#free').offsetWidth;$('#free').classList.add('flip')}
  lastFree=f;
- $('#free').textContent=f===0&&o>0?'FULL':two(f);$('#sign').classList.toggle('full',f===0&&o>0);$('#tot').textContent=two(n);
+ $('#free').textContent=f===0&&o>0?'FULL':two(f);$('#sign').classList.toggle('full',f===0&&o>0);$('#tot').textContent=two(n-pt);
  $('#pct').textContent=pct+'%';$('#arc').setAttribute('stroke-dasharray',(pct*3.14)+' 314');
  $('#pwd').innerHTML=pf+'<small> / '+pt+'</small>';
  $('#cam').textContent=cs.filter(([c,v])=>v.online).length+' / '+cs.length;

@@ -31,7 +31,7 @@ const int PIN_SERVO  = 18;   // entry gate
 const int NUM_PIXELS = 4;
 
 // ---------- custom LCD characters ----------
-enum { CH_CAR = 0, CH_ARROW, CH_EMPTY, CH_CHECK, CH_CROSS, CH_P, CH_DOT };
+enum { CH_CAR = 0, CH_ARROW, CH_EMPTY, CH_CHECK, CH_CROSS, CH_P, CH_DOT, CH_WHEEL };
 const uint8_t CH_FULL = 0xFF;  // built-in solid block
 byte gCar[8]   = {0b00000, 0b01110, 0b10001, 0b11111, 0b11111, 0b01010, 0b00000, 0b00000};
 byte gArrow[8] = {0b00000, 0b01000, 0b01100, 0b01110, 0b01100, 0b01000, 0b00000, 0b00000};
@@ -40,6 +40,7 @@ byte gCheck[8] = {0b00000, 0b00001, 0b00011, 0b10110, 0b11100, 0b01000, 0b00000,
 byte gCross[8] = {0b00000, 0b10001, 0b01010, 0b00100, 0b01010, 0b10001, 0b00000, 0b00000};
 byte gP[8]     = {0b11111, 0b10001, 0b10101, 0b10001, 0b10111, 0b10111, 0b11111, 0b00000};
 byte gDot[8]   = {0b00000, 0b00000, 0b01110, 0b01110, 0b01110, 0b00000, 0b00000, 0b00000};
+byte gWheel[8] = {0b00110, 0b00110, 0b00100, 0b00111, 0b01100, 0b10010, 0b10010, 0b01100};  // wheelchair (accessible)
 
 LiquidCrystal_I2C* lcd = nullptr;
 Adafruit_NeoPixel pixels(NUM_PIXELS, PIN_PIXELS, NEO_GRB + NEO_KHZ800);
@@ -47,7 +48,7 @@ WiFiClient net;
 PubSubClient mqtt(net);
 
 // ---------- parking data ----------
-struct Floor { char name[12]; int free; int total; };
+struct Floor { char name[12]; int free; int total; int pwd; };   // pwd = free accessible spots (not counted in free)
 Floor floors[6];
 int nFloors = 0;
 unsigned long lastMsg = 0;
@@ -64,6 +65,17 @@ int bestFloor() {  // most free spots among online floors, -1 if none
   return b;
 }
 bool stale() { return !haveData || millis() - lastMsg > 15000; }
+// "F1 F2" list of floors that have a free accessible spot ("" if none)
+void pwdFloors(char* out, int n) {
+  out[0] = 0;
+  for (int i = 0; i < nFloors; i++)
+    if (floors[i].free >= 0 && floors[i].pwd > 0) {
+      const char* d = floors[i].name + strlen(floors[i].name);
+      while (d > floors[i].name && isdigit((unsigned char)d[-1])) d--;
+      char t[6]; snprintf(t, sizeof t, "%sF%s", out[0] ? " " : "", *d ? d : "?");
+      strncat(out, t, n - strlen(out) - 1);
+    }
+}
 
 // ---------- LCD frame buffer (write only what changed) ----------
 uint8_t want[4][20], have[4][20];
@@ -79,7 +91,8 @@ void printFrame() {  // mirror to serial terminal (readable icons)
     for (int c = 0; c < 20; c++) {
       uint8_t ch = want[r][c];
       s += ch == CH_FULL ? '#' : ch == CH_EMPTY ? '.' : ch == CH_CAR ? 'C' : ch == CH_ARROW ? '>' :
-           ch == CH_CHECK ? 'v' : ch == CH_CROSS ? 'x' : ch == CH_P ? 'P' : ch == CH_DOT ? 'o' : (char)ch;
+           ch == CH_CHECK ? 'v' : ch == CH_CROSS ? 'x' : ch == CH_P ? 'P' : ch == CH_DOT ? 'o' :
+           ch == CH_WHEEL ? 'W' : (char)ch;
     }
     Serial.println(s);
   }
@@ -150,6 +163,7 @@ void drawFloorRow(int r, const Floor& f) {
   put(r, 12, buf);
   if (f.free == 0) putc_(r, 18, (anim / 2) % 2 ? CH_CROSS : ' ');
   else putc_(r, 18, CH_CHECK);
+  if (f.pwd > 0) putc_(r, 19, CH_WHEEL);   // accessible spot still free on this floor
 }
 
 void drawFloors() {
@@ -180,9 +194,12 @@ void drawGuide() {
   } else if ((anim / 2) % 2) {
     putCenter(2, "*** LOT  FULL ***");
   }
-  static const char* MARQ = "Welcome to SPU parking  -  AI vision by CiRA CORE  -  please drive slowly  -  ";
-  int L = strlen(MARQ);
-  for (int c = 0; c < 20; c++) want[3][c] = MARQ[(anim + c) % L];
+  char pf[24]; pwdFloors(pf, sizeof pf);
+  char marq[140];
+  snprintf(marq, sizeof marq, "%s%s%sWelcome to SPU parking  -  AI vision by CiRA CORE  -  please drive slowly  -  ",
+           pf[0] ? "Accessible parking free: " : "", pf, pf[0] ? "  -  " : "");
+  int L = strlen(marq);
+  for (int c = 0; c < 20; c++) want[3][c] = marq[(anim + c) % L];
 }
 
 void drawGate() {
@@ -196,7 +213,13 @@ void drawGate() {
   } else {
     putCenter(0, "SORRY");
     putCenter(1, "PARKING LOT FULL");
-    putc_(2, 2, CH_CROSS); put(2, 4, "Please wait"); putc_(2, 17, CH_CROSS);
+    char pf[24]; pwdFloors(pf, sizeof pf);
+    if (pf[0]) {   // general spots full, but tell disabled drivers where to go
+      char buf[24]; snprintf(buf, sizeof buf, "PWD only: %s", pf);
+      putc_(2, 1, CH_WHEEL); put(2, 3, buf);
+    } else {
+      putc_(2, 2, CH_CROSS); put(2, 4, "Please wait"); putc_(2, 17, CH_CROSS);
+    }
     putCenter(3, "Gate CLOSED");
   }
 }
@@ -259,7 +282,9 @@ void onMessage(char* topic, byte* p, unsigned int len) {
       strncpy(f.name, item.substring(0, c1).c_str(), sizeof f.name - 1);
       f.name[sizeof f.name - 1] = 0;
       f.free = item.substring(c1 + 1, c2).toInt();
-      f.total = item.substring(c2 + 1).toInt();
+      int c3 = item.indexOf(',', c2 + 1);   // optional 4th value: free accessible spots
+      f.total = (c3 > c2 ? item.substring(c2 + 1, c3) : item.substring(c2 + 1)).toInt();
+      f.pwd = c3 > c2 ? item.substring(c3 + 1).toInt() : 0;
     }
     i = semi + 1;
   }
@@ -359,7 +384,7 @@ void setup() {
     lcd->createChar(CH_CAR, gCar);   lcd->createChar(CH_ARROW, gArrow);
     lcd->createChar(CH_EMPTY, gEmpty); lcd->createChar(CH_CHECK, gCheck);
     lcd->createChar(CH_CROSS, gCross); lcd->createChar(CH_P, gP);
-    lcd->createChar(CH_DOT, gDot);
+    lcd->createChar(CH_DOT, gDot);   lcd->createChar(CH_WHEEL, gWheel);
     lcd->clear();
     memset(have, ' ', sizeof have);
     Serial.printf("LCD ready at 0x%02X\n", addr);

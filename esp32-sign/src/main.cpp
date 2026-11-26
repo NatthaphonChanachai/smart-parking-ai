@@ -157,6 +157,15 @@ void drawFloorRow(int r, const Floor& f) {
     put(r, 3, (anim / 2) % 2 ? "-- OFFLINE --" : "   OFFLINE   ");
     return;
   }
+  if (f.free == 0 && f.pwd > 0) {          // general spots full, accessible spot FREE -> say it in words
+    put(r, 3, "FULL");
+    put(r, 8, "|");
+    putc_(r, 10, CH_WHEEL);
+    char buf[10]; snprintf(buf, sizeof buf, "FREE %d", f.pwd);
+    put(r, 12, buf);
+    if ((anim / 2) % 2) putc_(r, 19, CH_WHEEL);
+    return;
+  }
   int n = f.total ? (f.free * 8 + f.total / 2) / f.total : 0;   // bar = share of FREE spots
   for (int i = 0; i < 8; i++) putc_(r, 3 + i, i < n ? CH_FULL : CH_EMPTY);
   char buf[8]; snprintf(buf, sizeof buf, "%2d/%-2d", f.free, f.total);
@@ -252,6 +261,7 @@ void pixelsLoop() {
     else if (i < nFloors) {
       const Floor& f = floors[i];
       if (f.free < 0) c = pixels.Color(40 * breath, 0, 60 * breath);              // offline: purple breathing
+      else if (f.free == 0 && f.pwd > 0) c = pixels.Color(0, 90 * breath, 255 * breath); // full, but accessible spot free: blue
       else if (f.free == 0) c = pixels.Color(255, 0, 0);                          // full
       else if (f.free * 3 < f.total) c = pixels.Color(255, 120, 0);               // almost full
       else c = pixels.Color(0, 220, 60);                                          // plenty

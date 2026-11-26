@@ -170,7 +170,7 @@ setBtn();
 /* build cards */
 function build(){
  $('#bays').innerHTML=Object.entries(D.cams).map(([c,v])=>{
-  const grid=v.cols?` grid" style="grid-template-rows:repeat(${Math.ceil(v.slots.length/v.cols)},1fr);grid-template-columns:repeat(${v.cols},1fr)`:'';
+  const grid=v.cols?` grid" style="grid-auto-flow:column;grid-template-rows:repeat(${Math.ceil(v.slots.length/v.cols)},1fr);grid-template-columns:repeat(${v.cols},1fr)`:'';
   return `<div class="card bay" id="b-${c}"><h3><span>${v.label}<small>กล้อง ${c}</small></span><span class="tabs"><button class="on" data-c="${c}" data-v="0">ผังช่อง</button><button data-c="${c}" data-v="1">มุมมอง AI</button></span></h3>
   <div class="chips" id="c-${c}"></div>
   <div class="slots${grid}">${v.slots.map((s,i)=>`<div class="slot unknown" id="s-${s.id}"><i class="led"></i><div class="car" style="background:${COL[(+s.id*3+i)%COL.length]}"></div><div class="P">P</div>${s.type==='pwd'?'<span class="pwd">♿</span>':''}<em class="id">${s.id}</em><em class="dur"></em></div>`).join('')}</div>

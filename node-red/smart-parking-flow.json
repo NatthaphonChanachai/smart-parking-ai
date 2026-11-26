@@ -35,7 +35,7 @@
         "type": "function",
         "z": "b608cad9aecc6bc4",
         "name": "Init ROI (แก้ช่องจอดที่นี่)",
-        "func": "// ตารางช่องจอดของทุกกล้อง (แก้ที่นี่ที่เดียว แล้วกด Deploy)\n// x1-x2 = ช่วงจุดกึ่งกลางกล่องรถ เป็นสัดส่วนของความกว้างภาพ (0-1)\nflow.set(\"CAMS\", {\n  \"2A-C01\": [\n    {id: \"01\", x1: 0.00, x2: 0.33, type: \"pwd\"},\n    {id: \"02\", x1: 0.33, x2: 0.67, type: \"normal\"},\n    {id: \"03\", x1: 0.67, x2: 1.00, type: \"normal\"}\n  ],\n  \"2A-C02\": [\n    {id: \"04\", x1: 0.00, x2: 0.65, type: \"pwd\"},\n    {id: \"05\", x1: 0.65, x2: 1.00, type: \"normal\"}\n  ],\n  \"2A-C03\": [\n    {id: \"06\", x1: 0.00, x2: 0.33, type: \"normal\"},\n    {id: \"07\", x1: 0.33, x2: 0.66, type: \"normal\"},\n    {id: \"08\", x1: 0.66, x2: 1.00, type: \"normal\"}\n  ],\n  // เว็บแคมจับโมเดลลานจอดจำลอง -> CiRA MQTT Pub topic: parking/raw/2A-C04\n  // ภาพแนวนอน: 2 แถว x 6 ช่อง (แถวบน 09-14, แถวล่าง 15-20) ถนนตรงกลาง y 0.40-0.60 ไม่นับ\n  // ค่าประมาณจากภาพ Debug ของเว็บแคม -> ถ้าขยับกล้อง/แผ่นลานจอด ให้ปรับ x/y ใหม่\n  \"2A-C04\": [\n    // แถวบน ซ้าย->ขวา\n    {id: \"09\", x1: 0.07, x2: 0.19, y1: 0.00, y2: 0.40, type: \"normal\"},\n    {id: \"10\", x1: 0.19, x2: 0.30, y1: 0.00, y2: 0.40, type: \"normal\"},\n    {id: \"11\", x1: 0.30, x2: 0.40, y1: 0.00, y2: 0.40, type: \"normal\"},\n    {id: \"12\", x1: 0.40, x2: 0.51, y1: 0.00, y2: 0.40, type: \"normal\"},\n    {id: \"13\", x1: 0.51, x2: 0.61, y1: 0.00, y2: 0.40, type: \"normal\"},\n    {id: \"14\", x1: 0.61, x2: 0.75, y1: 0.00, y2: 0.40, type: \"normal\"},\n    // แถวล่าง ซ้าย->ขวา\n    {id: \"15\", x1: 0.06, x2: 0.20, y1: 0.60, y2: 1.00, type: \"normal\"},\n    {id: \"16\", x1: 0.20, x2: 0.30, y1: 0.60, y2: 1.00, type: \"normal\"},\n    {id: \"17\", x1: 0.30, x2: 0.42, y1: 0.60, y2: 1.00, type: \"normal\"},\n    {id: \"18\", x1: 0.42, x2: 0.52, y1: 0.60, y2: 1.00, type: \"normal\"},\n    {id: \"19\", x1: 0.52, x2: 0.63, y1: 0.60, y2: 1.00, type: \"normal\"},\n    {id: \"20\", x1: 0.63, x2: 0.78, y1: 0.60, y2: 1.00, type: \"normal\"}\n  ]\n});\n// ชื่อชั้นที่แสดงบน dashboard / ป้าย LCD\nflow.set(\"LABEL\", {\"2A-C01\": \"Floor 1\", \"2A-C02\": \"Floor 2\", \"2A-C03\": \"Floor 3\", \"2A-C04\": \"Floor 4\"});\nflow.set(\"lastSeen\", {});\nflow.set(\"camStats\", {});\nflow.set(\"offline\", {});\nflow.set(\"slotState\", {});\nreturn null;",
+        "func": "// ตารางช่องจอดของทุกกล้อง (แก้ที่นี่ที่เดียว แล้วกด Deploy)\n// x1-x2 = ช่วงจุดกึ่งกลางกล่องรถ เป็นสัดส่วนของความกว้างภาพ (0-1)\nflow.set(\"CAMS\", {\n  \"2A-C01\": [\n    {id: \"01\", x1: 0.00, x2: 0.33, type: \"pwd\"},\n    {id: \"02\", x1: 0.33, x2: 0.67, type: \"normal\"},\n    {id: \"03\", x1: 0.67, x2: 1.00, type: \"normal\"}\n  ],\n  \"2A-C02\": [\n    {id: \"04\", x1: 0.00, x2: 0.65, type: \"pwd\"},\n    {id: \"05\", x1: 0.65, x2: 1.00, type: \"normal\"}\n  ],\n  \"2A-C03\": [\n    {id: \"06\", x1: 0.00, x2: 0.33, type: \"normal\"},\n    {id: \"07\", x1: 0.33, x2: 0.66, type: \"normal\"},\n    {id: \"08\", x1: 0.66, x2: 1.00, type: \"normal\"}\n  ],\n  // เว็บแคมจับโมเดลลานจอดจำลอง -> CiRA MQTT Pub topic: parking/raw/2A-C04\n  // ภาพแนวนอน: 2 แถว x 6 ช่อง (แถวบน 09-14, แถวล่าง 15-20) ถนนตรงกลาง y 0.40-0.60 ไม่นับ\n  // ค่าประมาณจากภาพ Debug ของเว็บแคม -> ถ้าขยับกล้อง/แผ่นลานจอด ให้ปรับ x/y ใหม่\n  \"2A-C04\": [\n    // แถวบน ซ้าย->ขวา\n    {id: \"09\", x1: 0.07, x2: 0.19, y1: 0.00, y2: 0.40, type: \"normal\"},\n    {id: \"10\", x1: 0.19, x2: 0.30, y1: 0.00, y2: 0.40, type: \"normal\"},\n    {id: \"11\", x1: 0.30, x2: 0.40, y1: 0.00, y2: 0.40, type: \"normal\"},\n    {id: \"12\", x1: 0.40, x2: 0.51, y1: 0.00, y2: 0.40, type: \"normal\"},\n    {id: \"13\", x1: 0.51, x2: 0.61, y1: 0.00, y2: 0.40, type: \"normal\"},\n    {id: \"14\", x1: 0.61, x2: 0.75, y1: 0.00, y2: 0.40, type: \"normal\"},\n    // แถวล่าง ซ้าย->ขวา\n    {id: \"15\", x1: 0.06, x2: 0.20, y1: 0.60, y2: 1.00, type: \"normal\"},\n    {id: \"16\", x1: 0.20, x2: 0.30, y1: 0.60, y2: 1.00, type: \"normal\"},\n    {id: \"17\", x1: 0.30, x2: 0.42, y1: 0.60, y2: 1.00, type: \"normal\"},\n    {id: \"18\", x1: 0.42, x2: 0.52, y1: 0.60, y2: 1.00, type: \"normal\"},\n    {id: \"19\", x1: 0.52, x2: 0.63, y1: 0.60, y2: 1.00, type: \"normal\"},\n    {id: \"20\", x1: 0.63, x2: 0.78, y1: 0.60, y2: 1.00, type: \"normal\"}\n  ]\n});\n// ชื่อชั้นที่แสดงบน dashboard / ป้าย LCD\n// ผังที่เขียนเองข้างบน = ผังตั้งต้น (ปุ่ม \"คืนผังเดิม\" จะกลับมาใช้ค่านี้)\nflow.set(\"CAMS_DEFAULT\", JSON.parse(JSON.stringify(flow.get(\"CAMS\"))));\nflow.set(\"LABEL\", {\"2A-C01\": \"Floor 1\", \"2A-C02\": \"Floor 2\", \"2A-C03\": \"Floor 3\", \"2A-C04\": \"Floor 4\"});\nflow.set(\"lastSeen\", {});\nflow.set(\"camStats\", {});\nflow.set(\"offline\", {});\nflow.set(\"slotState\", {});\nreturn null;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -482,8 +482,8 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 200,
-        "y": 780,
+        "x": 160,
+        "y": 820,
         "wires": [
             [
                 "19116ac0d7fb209a"
@@ -502,8 +502,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 460,
-        "y": 780,
+        "x": 400,
+        "y": 820,
         "wires": [
             [
                 "c575b3cf2417611c",
@@ -525,8 +525,8 @@
         "correl": "",
         "expiry": "",
         "broker": "832b8e8152e04531",
-        "x": 830,
-        "y": 780,
+        "x": 810,
+        "y": 820,
         "wires": []
     },
     {
@@ -543,7 +543,7 @@
         "statusVal": "",
         "statusType": "auto",
         "x": 700,
-        "y": 860,
+        "y": 900,
         "wires": []
     },
     {
@@ -601,6 +601,79 @@
         "broker": "832b8e8152e04531",
         "x": 690,
         "y": 760,
+        "wires": []
+    },
+    {
+        "id": "roi_load_inj",
+        "type": "inject",
+        "z": "b608cad9aecc6bc4",
+        "name": "อ่านผัง ROI จาก CiRA ทุก 5 วิ",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1.5",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 220,
+        "y": 1260,
+        "wires": [
+            [
+                "roi_file_in"
+            ]
+        ]
+    },
+    {
+        "id": "roi_file_in",
+        "type": "file in",
+        "z": "b608cad9aecc6bc4",
+        "name": "อ่าน parking-roi.json",
+        "filename": "C:\\Users\\mint\\.node-red\\parking-roi.json",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "utf8",
+        "allProps": false,
+        "x": 480,
+        "y": 1260,
+        "wires": [
+            [
+                "roi_apply"
+            ]
+        ]
+    },
+    {
+        "id": "roi_apply",
+        "type": "function",
+        "z": "b608cad9aecc6bc4",
+        "name": "ใช้ผัง ROI ที่ CiRA หาเอง",
+        "func": "// CiRA (กล่อง PythonScript) หาตำแหน่งช่องจริงจากกรอบที่ AI เห็น แล้วเขียน parking-roi.json\n// node นี้อ่านไฟล์ทุก 5 วินาที -> ใช้ผังเดียวกับที่ CiRA วาด (แดชบอร์ดตรงกับภาพเสมอ)\nconst raw = String(msg.payload || \"\");\nif (raw === flow.get(\"ROI_RAW\")) return null;          // ไม่เปลี่ยน -> ไม่ต้องทำอะไร\nlet o;\ntry { o = JSON.parse(raw || \"{}\"); } catch (e) { return null; }   // ไฟล์กำลังเขียนอยู่ รอรอบหน้า\nconst C = flow.get(\"CAMS\"), D = flow.get(\"CAMS_DEFAULT\") || {};\nif (!C) return null;\nconst used = [];\nfor (const cam in C) {\n  if (o[cam] && Array.isArray(o[cam]) && o[cam].length === C[cam].length) { C[cam] = o[cam]; used.push(cam); }\n  else if (D[cam]) C[cam] = JSON.parse(JSON.stringify(D[cam]));   // ไม่มีในไฟล์ -> ผังตั้งต้น\n}\nflow.set(\"CAMS\", C); flow.set(\"ROI_RAW\", raw);\nnode.status({fill: \"green\", shape: \"dot\", text: used.length ? \"ผังจาก CiRA: \" + used.join(\", \") : \"ผังตั้งต้น\"});\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 710,
+        "y": 1260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "roi_comment",
+        "type": "comment",
+        "z": "b608cad9aecc6bc4",
+        "name": "ผัง ROI อัตโนมัติ: CiRA หาตำแหน่งช่องจริงเอง -> parking-roi.json -> Node-RED ใช้ตาม",
+        "info": "",
+        "x": 400,
+        "y": 1220,
         "wires": []
     },
     {

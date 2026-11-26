@@ -58,6 +58,7 @@ CPE447 Machine Vision System · Final Project · ทีม **Happy Wheel**
 - MQTT Pub → `127.0.0.1:1883` topic `parking/raw/<camera-id>`
 - `smart-parking-flow-overlay.npj` — flow เดียวกัน + กล่อง **PythonScript** ทุก scene: `DeepDetect → PythonScript → Debug` (สาย `DeepDetect → MqttPub` เหมือนเดิม)
 - `overlay_slots.py` — โค้ดในกล่อง PythonScript วาดผังช่องจอด (ROI ชุดเดียวกับ Node-RED) ทับวิดีโอ: เขียว = ว่าง, แดง = ไม่ว่าง, เทา = ไม่แน่ใจ, น้ำเงิน = ช่องคนพิการว่าง (ไม่แนะนำให้คนทั่วไป), กรอบส้ม + `GO >` = ช่องที่แนะนำ (เฉพาะช่องธรรมดา), แถบบน = ชั้น · ว่าง x/y · PWD x/y
+- **ROI อัตโนมัติ (Auto ROI)** — กล่อง PythonScript เรียนตำแหน่งช่องจริงจากกรอบที่ AI เห็น (45 เฟรมล่าสุด, คำนวณใหม่ทุก 3 วินาที) ใช้ผังใหม่เฉพาะตอนเจอครบทุกช่องและไม่มีช่องไหนกระโดดไปที่อื่น แล้วเขียน `~/.node-red/parking-roi.json` ให้ Node-RED อ่านตามทุก 5 วินาที → เปลี่ยนคลิปหรือขยับเว็บแคม ผังก็ตามช่องจริงเอง (มุมขวาบนของภาพขึ้น `ROI AUTO`)
   > CiRA CORE 1.9.4: เปิดไฟล์ด้วยการเปิดโปรแกรมใหม่ (อย่าใช้ Open Project ซ้ำในหน้าต่างเดิม → segfault) และห้ามเขียนค่ากลับเข้า `payload` จากกล่องนี้
 
   ![CiRA overlay](docs/images/cira-overlay-live.jpg)

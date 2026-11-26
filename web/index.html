@@ -52,7 +52,7 @@ svg.ring{width:92px;height:92px;transform:rotate(-90deg)}.ringw b{font-size:32px
 .stat .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:19px;background:#ffffff0c}
 .stat b{font-size:24px;display:block;line-height:1.1}.stat span{font-size:12px;color:var(--mut)}
 /* floors overview */
-.floor{display:grid;grid-template-columns:64px 1fr 56px;gap:10px;align-items:center;margin:9px 0;font-size:14px}
+.floor{display:grid;grid-template-columns:64px 1fr auto;gap:10px;align-items:center;margin:9px 0;font-size:14px}
 .bar{height:14px;border-radius:7px;background:#ffffff0d;display:flex;overflow:hidden}
 .bar i{display:block;height:100%;transition:width .8s}
 .bar .f{background:linear-gradient(90deg,#16b07f,var(--grn))}.bar .o{background:linear-gradient(90deg,#d63a4b,var(--red))}.bar .u{background:repeating-linear-gradient(45deg,#ffc93c55 0 6px,#ffc93c22 6px 12px)}
@@ -72,6 +72,8 @@ svg.ring{width:92px;height:92px;transform:rotate(-90deg)}.ringw b{font-size:32px
 .slot{flex:1;aspect-ratio:3/4.4;border:2px dashed #34466b;border-radius:10px;position:relative;display:grid;place-items:center;overflow:hidden;transition:.4s;cursor:default}
 .slot.free{border-color:var(--grn);background:#22d39a12}
 .slot.occupied{border-color:var(--red);background:#ff4d5e12}
+.slot.pwdfree{border-color:var(--blu);background:#4c8dff1c}.slot.pwdfree .P{color:var(--blu)}.slot.pwdfree::after{content:'เฉพาะผู้พิการ';position:absolute;left:0;right:0;bottom:26px;text-align:center;font-size:11px;color:var(--blu);font-weight:700}
+.floor em.pw,.chip.pw{font-style:normal;color:#9cc0ff;background:#4c8dff26;border:1px solid #4c8dff66;border-radius:7px;padding:1px 7px;margin-left:8px;font-size:12px;white-space:nowrap}.chip.pw{margin-left:0}
 .slot.unknown{border-color:var(--yel);background:#ffc93c0f}
 .slot.best{border-style:solid;box-shadow:0 0 0 2px var(--grn),0 0 24px #22d39aaa;animation:glow 1.6s infinite}
 @keyframes glow{50%{box-shadow:0 0 0 2px var(--grn),0 0 6px #22d39a55}}
@@ -141,7 +143,7 @@ footer{color:var(--mut);font-size:12px;text-align:center;margin:6px 0 10px}
  <div class="card"><div class="lbl">📈 ช่องว่าง / ไม่ว่าง ตามเวลา</div><svg id="chart" viewBox="0 0 600 190" style="width:100%"></svg>
   <div class="legend"><span><i style="background:var(--grn)"></i>ว่าง</span><span><i style="background:var(--red)"></i>ไม่ว่าง</span></div></div>
  <div class="card"><div class="lbl">🏢 ภาพรวมรายชั้น</div><div id="floors"></div>
-  <div class="legend"><span><i style="background:var(--grn)"></i>ว่าง</span><span><i style="background:var(--red)"></i>ไม่ว่าง</span><span><i style="background:#ffc93c66"></i>ไม่ทราบ</span></div>
+  <div class="legend"><span><i style="background:var(--grn)"></i>ว่าง</span><span><i style="background:var(--red)"></i>ไม่ว่าง</span><span><i style="background:#ffc93c66"></i>ไม่ทราบ</span><span><i style="background:var(--blu)"></i>♿ ว่าง (ผู้พิการ)</span></div>
   <div class="lbl" style="margin-top:16px">📟 ป้าย LCD หน้าลานจอด (ESP32)</div><div class="lcd"><pre id="lcd"></pre></div><div class="leds" id="leds"></div></div>
  <div class="card"><div class="lbl">🕑 เหตุการณ์ล่าสุด</div><ul class="ev" id="ev"></ul></div>
 </div>
@@ -195,24 +197,25 @@ function lcdText(fl){
  if(fl.length<4)rows.push(('FREE '+tf+'/'+tt).padEnd(14)+new Date().toLocaleTimeString('en-GB').slice(0,5).padStart(6));
  fl.slice(0,4).forEach(f=>{const nm='F'+(f.label.match(/\d+$/)||[f.label[0]])[0];
   if(f.free<0){rows.push((nm.padEnd(3)+'-- OFFLINE --').padEnd(20));return}
+  if(f.free===0&&f.pwd>0){rows.push((nm.padEnd(3)+'FULL | ♿ FREE '+f.pwd).padEnd(19).slice(0,19)+'♿');return}
   const n=Math.round(f.free/f.total*8),bar='█'.repeat(n)+'░'.repeat(8-n),ft=(f.free+'/'+f.total).padStart(5);
-  rows.push((nm.padEnd(3)+bar+' '+ft+' '+(f.free?'✓':'✗')).padEnd(20).slice(0,20))});
+  rows.push((nm.padEnd(3)+bar+' '+ft+' '+(f.free?'✓':'✗')+(f.pwd>0?'♿':'')).padEnd(20).slice(0,20))});
  while(rows.length<4)rows.push(''.padEnd(20));
  return rows.join('\n');
 }
 function render(){
  const S=D.slots,cs=Object.entries(D.cams),all=cs.flatMap(([c,v])=>v.slots);
  let f=0,o=0,pf=0,pt=0;const fl=[];
- cs.forEach(([c,v])=>{let cf=0,co=0;v.slots.forEach(s=>{const x=S[s.id],st=x?x.status:'unknown';
-  const pw=s.type==='pwd';if(st==='free'){if(pw)pf++;else{f++;cf++}}if(st==='occupied'){o++;if(!pw)co++}if(pw)pt++;
-  const el=$('#s-'+s.id);el.className='slot '+st+(D.rec&&D.rec.slot===s.id?' best':'');el.querySelector('.dur').textContent=x&&st!=='unknown'?dur(D.now-x.ts):'';
+ cs.forEach(([c,v])=>{let cf=0,co=0,cpf=0;v.slots.forEach(s=>{const x=S[s.id],st=x?x.status:'unknown';
+  const pw=s.type==='pwd';if(st==='free'){if(pw){pf++;cpf++}else{f++;cf++}}if(st==='occupied'){o++;if(!pw)co++}if(pw)pt++;
+  const el=$('#s-'+s.id);el.className='slot '+st+(pw&&st==='free'?' pwdfree':'')+(D.rec&&D.rec.slot===s.id?' best':'');el.querySelector('.dur').textContent=x&&st!=='unknown'?dur(D.now-x.ts):'';
   el.title=`ช่อง ${s.id} · ${TH[st]}`+(x&&x.conf!=null?` · ความมั่นใจ ${Math.round(x.conf*100)}%`:'')+(x?` · ตั้งแต่ ${new Date(x.ts).toLocaleTimeString('th-TH')}`:'');
   if(prev&&prev[s.id]&&prev[s.id].status!==st){el.classList.add('ping');setTimeout(()=>el.classList.remove('ping'),900)}});
   const n=v.slots.filter(s=>s.type!=='pwd').length,known=cf+co;   // ช่องธรรมดาเท่านั้น (ช่องคนพิการแสดงแยก)
-  fl.push({c,label:v.label,free:v.online&&known?cf:-1,occ:co,total:n,unk:n-known,online:v.online});
-  $('#c-'+c).innerHTML=`<span class="chip" style="color:${v.online?'var(--grn)':'var(--yel)'}">● ${v.online?'ออนไลน์':'ออฟไลน์'}</span><span class="chip">ว่าง ${cf}/${n}</span><span class="chip">${v.fps} fps</span><span class="chip">AI ${v.conf!=null?Math.round(v.conf*100)+'%':'-'}</span><span class="chip">ล่าสุด ${ago(v.age)}</span>`;
+  fl.push({c,label:v.label,free:v.online&&known?cf:-1,occ:co,total:n,unk:n-known,online:v.online,pwd:v.online?cpf:0});
+  $('#c-'+c).innerHTML=`<span class="chip" style="color:${v.online?'var(--grn)':'var(--yel)'}">● ${v.online?'ออนไลน์':'ออฟไลน์'}</span><span class="chip">ว่าง ${cf}/${n}</span>${cpf?`<span class="chip pw">♿ ช่องคนพิการว่าง ${cpf}</span>`:''}<span class="chip">${v.fps} fps</span><span class="chip">AI ${v.conf!=null?Math.round(v.conf*100)+'%':'-'}</span><span class="chip">ล่าสุด ${ago(v.age)}</span>`;
   aiView(c,v,S);
-  const led=$('#l-'+c);const lc=!v.online?'#3a4a6b':cf===0?'#ff4d5e':cf/n<.34?'#ffc93c':'#22d39a';led.style.background=lc;led.style.color=lc});
+  const led=$('#l-'+c);const lc=!v.online?'#3a4a6b':cf===0?(cpf>0?'#4c8dff':'#ff4d5e'):cf/n<.34?'#ffc93c':'#22d39a';led.style.background=lc;led.style.color=lc});
  const n=all.length,pct=n?Math.round(o/n*100):0;
  if(lastFree!==null&&lastFree!==f){$('#free').classList.remove('flip');void $('#free').offsetWidth;$('#free').classList.add('flip')}
  lastFree=f;
@@ -229,7 +232,7 @@ function render(){
  const st=D.stats;$('#sIn').textContent=st.entries;$('#sOut').textContent=st.exits;$('#sAvg').textContent=st.avgStay?dur(st.avgStay):'-';
  $('#sPeak').textContent=n?Math.round(st.peak/n*100)+'%':'-';$('#sPeakT').textContent='จอดสูงสุดวันนี้'+(st.peakT?' · '+new Date(st.peakT).toLocaleTimeString('th-TH').slice(0,5):'');
  // floors
- $('#floors').innerHTML=fl.map(x=>`<div class="floor"><span>${x.label}</span><div class="bar"><i class="f" style="width:${(x.free>0?x.free:0)/x.total*100}%"></i><i class="o" style="width:${x.occ/x.total*100}%"></i><i class="u" style="width:${x.unk/x.total*100}%"></i></div><span class="n">${x.free<0?'OFF':x.free+'/'+x.total}</span></div>`).join('');
+ $('#floors').innerHTML=fl.map(x=>`<div class="floor"><span>${x.label}</span><div class="bar"><i class="f" style="width:${(x.free>0?x.free:0)/x.total*100}%"></i><i class="o" style="width:${x.occ/x.total*100}%"></i><i class="u" style="width:${x.unk/x.total*100}%"></i></div><span class="n">${x.free<0?'OFF':x.free+'/'+x.total}${x.pwd>0?`<em class="pw">♿ ว่าง ${x.pwd}</em>`:''}</span></div>`).join('');
  $('#lcd').textContent=lcdText(fl);
  // events
  $('#ev').innerHTML=D.events.slice(0,12).map(e=>`<li><time>${new Date(e.t).toLocaleTimeString('th-TH')}</time><span>ช่อง ${e.id}</span><span class="t-${e.to}">${TH[e.from]||'-'} → ${TH[e.to]}</span></li>`).join('')||'<li class="lbl">ยังไม่มีการเปลี่ยนแปลง</li>';
